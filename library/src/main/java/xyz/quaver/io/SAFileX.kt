@@ -1,0 +1,117 @@
+/*
+ *   ____                                        _   _____ _ _     __  __
+ *  |  _ \  ___   ___ _   _ _ __ ___   ___ _ __ | |_|  ___(_) | ___\ \/ /
+ *  | | | |/ _ \ / __| | | | '_ ` _ \ / _ \ '_ \| __| |_  | | |/ _ \\  /
+ *  | |_| | (_) | (__| |_| | | | | | |  __/ | | | |_|  _| | | |  __//  \
+ *  |____/ \___/ \___|\__,_|_| |_| |_|\___|_| |_|\__|_|   |_|_|\___/_/\_\
+ *
+ *     Copyright 2020 tom5079
+ *
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ */
+
+package xyz.quaver.io
+
+import androidx.annotation.RequiresApi
+import xyz.quaver.io.util.*
+
+@RequiresApi(19)
+abstract class SAFileX : FileX {
+    private constructor() : super("") {
+        throw UnsupportedOperationException("STOP! You violated the law.")
+    }
+
+    internal constructor(path: String) : super(path)
+
+    override fun canExecute() = false
+
+    override fun canRead() = when {
+        cached -> cache.canRead
+        else -> uri.canRead(context)
+    }
+
+    override fun canWrite() = when {
+        cached -> cache.canWrite
+        else -> uri.canWrite(context)
+    }
+
+    override fun delete(): Boolean {
+        if (!uri.exists(context))
+            return false
+
+        uri.delete(context)
+
+        if (uri.exists(context))
+            return false
+
+        return true
+    }
+
+    override fun deleteOnExit() {
+        DeleteOnExitHook.add(uri)
+    }
+
+    override fun exists() = when {
+        cached -> cache.exists
+        else -> uri.exists(context)
+    }
+
+    override fun getAbsoluteFile() = canonicalFile
+    override fun getAbsolutePath() = canonicalPath
+
+    override fun getCanonicalFile() = uri.toFile(context)
+    override fun getCanonicalPath() = canonicalFile?.canonicalPath
+
+    override fun getName() = uri.name
+    override fun getPath() = uri.path
+
+    override fun getFreeSpace() = kotlin.runCatching {
+        canonicalFile?.freeSpace
+    }.getOrNull() ?: throw UnsupportedOperationException()
+
+    override fun getTotalSpace() = kotlin.runCatching {
+        canonicalFile?.totalSpace
+    }.getOrNull() ?: throw UnsupportedOperationException()
+
+    override fun getUsableSpace() = kotlin.runCatching {
+        canonicalFile?.usableSpace
+    }.getOrNull() ?: throw UnsupportedOperationException()
+
+    override fun hashCode() =
+        uri.hashCode()
+
+    override fun equals(other: Any?) =
+        this.hashCode() == other.hashCode()
+
+    override fun isAbsolute() = true
+
+    override fun isDirectory(): Boolean = when {
+        cached -> cache.isDirectory
+        else -> uri.isDirectory(context)
+    }
+
+    override fun isFile() = !isDirectory
+
+    override fun isHidden() = name?.startsWith('.') ?: false
+
+    override fun lastModified() = when {
+        cached -> cache.lastModified
+        else -> uri.lastModified(context)
+    } ?: 0L
+
+    override fun length() = when {
+        cached -> cache.length
+        else -> uri.length(context)
+    } ?: 0L
+
+}

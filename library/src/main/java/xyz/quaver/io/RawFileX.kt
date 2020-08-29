@@ -20,8 +20,29 @@
  *     limitations under the License.
  */
 
-package xyz.quaver.documentfilex
+package xyz.quaver.io
 
-class DocumentFileX {
-    
+import android.content.Context
+import android.net.Uri
+import xyz.quaver.io.util.isFileUri
+
+class RawFileX : FileX {
+
+    constructor(context: Context, parent: Uri, child: String)
+            : this(context, Uri.withAppendedPath(parent, child))
+
+    constructor(context: Context, uri: Uri) : super(uri.path.let {
+        it ?: throw NullPointerException("URI path should not be null")
+    }) {
+        if (!uri.isFileUri)
+            throw UnsupportedOperationException("RawFileX can only be created with file uri")
+
+        this.context = context
+        this.uri = uri
+    }
+
+    override fun invalidate() {
+        // Does nothing
+    }
+
 }
