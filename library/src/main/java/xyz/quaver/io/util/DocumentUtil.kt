@@ -96,8 +96,11 @@ val Uri.isRoot: Boolean
  * `1A19-3B89:Android/data`
  * returns `["1A19-3B89", "Android/data"]`
  */
-val String.documentIdSegments: List<String>
+internal val String.documentIdSegments: List<String>
     get() = this.split(":")
+
+internal val Uri.documentIdSegment: List<String>?
+    get() = this.niceDocumentId?.documentIdSegments
 
 /**
  * Returns the root of the Uri
@@ -106,7 +109,7 @@ val String.documentIdSegments: List<String>
  * `1A19-3B89:Android/data`
  * returns `"1A19-3B89"`
  */
-val String.volumeId: String?
+internal val String.volumeId: String?
     get() = this.documentIdSegments.firstOrNull()
 
 val Uri.volumeId: String?
@@ -119,7 +122,7 @@ val Uri.volumeId: String?
  * `1A19-3B89:Android/data`
  * returns `Android/data`
  */
-val String.documentIdPath: String?
+internal val String.documentIdPath: String?
     get() = this.documentIdSegments.getOrNull(1)
 
 val Uri.documentIdPath: String?
@@ -132,7 +135,7 @@ val Uri.documentIdPath: String?
  * `1A19-3B89:Android/data`
  * returns `["Android", "data"]`
  */
-val String.documentIdPathSegments: List<String>?
+internal val String.documentIdPathSegments: List<String>?
     get() = this.documentIdPath?.split('/')
 
 val Uri?.documentIdPathSegments: List<String>?
