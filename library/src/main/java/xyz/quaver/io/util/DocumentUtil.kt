@@ -20,6 +20,8 @@
  *     limitations under the License.
  */
 
+@file:SuppressWarnings("unused")
+
 package xyz.quaver.io.util
 
 import android.content.ContentResolver
@@ -84,6 +86,9 @@ val Uri.documentId: String?
 val Uri.isDocumentUri: Boolean
     get() = this.documentId != null
 
+val Uri.isRoot: Boolean
+    get() = this.niceDocumentId?.split(':')?.getOrNull(1).isNullOrBlank()
+
 /**
  * Returns the segmented DocumentID
  *
@@ -105,7 +110,7 @@ val String.volumeId: String?
     get() = this.documentIdSegments.firstOrNull()
 
 val Uri.volumeId: String?
-    get() = this.documentId?.volumeId
+    get() = this.niceDocumentId?.volumeId
 
 /**
  * Returns a path of the given DocumentID
@@ -118,7 +123,7 @@ val String.documentIdPath: String?
     get() = this.documentIdSegments.getOrNull(1)
 
 val Uri.documentIdPath: String?
-    get() = this.documentId?.documentIdPath
+    get() = this.niceDocumentId?.documentIdPath
 
 /**
  * Returns a segmented path of the given DocumentID
@@ -131,20 +136,20 @@ val String.documentIdPathSegments: List<String>?
     get() = this.documentIdPath?.split('/')
 
 val Uri?.documentIdPathSegments: List<String>?
-    get() = this?.documentId?.documentIdPathSegments
+    get() = this?.niceDocumentId?.documentIdPathSegments
 
 /**
  * Returns a new Document ID according to the given parameters
  *
- * @param [root] Root of the URI
+ * @param [volumeId] Root of the URI
  * @param [path] Path under the root
  *
  * @return DocumentID string
  */
-fun createNewDocumentId(root: String, path: String) =
-    "$root:$path"
+fun createNewDocumentId(volumeId: String, path: String) =
+    "$volumeId:$path"
 
-val Uri?.nicePath: String?
+val Uri?.niceDocumentId: String?
     get() = this?.documentId ?: this?.treeDocumentId
 
 /**
@@ -155,13 +160,24 @@ val Uri?.nicePath: String?
  * @see Uri.isExternalStorageDocument
  */
 @RequiresApi(21)
-fun Uri.getChildUri(filename: String): Uri {
+fun Uri.getChildUri(child: String): Uri {
     if (!this.hasTreeUri)
         throw UnsupportedOperationException("Only Tree Uri is allowed")
 
+    val childDocumentId =
+        if (this.isRoot)
+            "${this.volumeId}:${child}"
+        else
+            "${this.niceDocumentId}/$child"
+
+    val treeDocumentId = createNewDocumentId(
+        this.volumeId!!,
+        childDocumentId.documentIdPathSegments!!.dropLast(1).joinToString("/")
+    )
+
     return DocumentsContract.buildDocumentUriUsingTree(
-        this,
-        if (this.documentIdPath.isNullOrEmpty()) "${this.treeDocumentId}$filename" else "${this.treeDocumentId}/$filename"
+        DocumentsContract.buildTreeDocumentUri(authority, treeDocumentId),
+        childDocumentId
     )
 }
 /**
@@ -176,12 +192,19 @@ fun Uri.getNeighborUri(filename: String): Uri? {
     if (!this.hasTreeUri)
         throw UnsupportedOperationException("Only Tree Uri is allowed")
 
-    val root = this.volumeId ?: return null
-    val path = this.documentIdPathSegments?.toMutableList()?.apply {
-        this[lastIndex] = filename
-    }?.joinToString("/") ?: return null
+    val neighborDocumentId = this.documentIdPathSegments!!.let {
+        if (it.isEmpty())
+            listOf(filename)
+        else
+            it.toMutableList().apply {
+                this[lastIndex] = filename
+            }
+    }.joinToString("/")
 
-    return DocumentsContract.buildDocumentUriUsingTree(this, createNewDocumentId(root, path))
+    return DocumentsContract.buildDocumentUriUsingTree(
+        DocumentsContract.buildTreeDocumentUri(authority, treeDocumentId),
+        createNewDocumentId(volumeId!!, neighborDocumentId)
+    )
 }
 
 val Uri.name: String?
@@ -231,12 +254,21 @@ val Uri.parent: Uri?
         if (!this.hasTreeUri)
             throw UnsupportedOperationException("Only Tree Uri is allowed")
 
-        val root = this.volumeId ?: return null
-        val path = this.documentIdPathSegments
-            ?.dropLast(1)
-            ?.joinToString("/") ?: return null
+        val parentDocumentId =
+            createNewDocumentId(volumeId!!, this.documentIdPathSegments!!
+                .dropLast(1)
+                .joinToString("/")
+            )
 
-        return DocumentsContract.buildDocumentUriUsingTree(this, createNewDocumentId(root, path))
+        val treeDocumentId = createNewDocumentId(
+            this.volumeId!!,
+            parentDocumentId.documentIdPathSegments!!.dropLast(1).joinToString("/")
+        )
+
+        return DocumentsContract.buildDocumentUriUsingTree(
+            DocumentsContract.buildTreeDocumentUri(authority, treeDocumentId),
+            parentDocumentId
+        )
     }
 
 fun Uri.writeText(context: Context, str: String) =

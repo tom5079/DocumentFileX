@@ -39,7 +39,7 @@ class TreeFileX : SAFileX {
     }
 
     constructor(context: Context, parent: Uri, child: String, cached: Boolean)
-            : this(context, parent.getChildUri(child), cached)
+        : this(context, parent.getChildUri(child), cached)
 
     constructor(context: Context, uri: Uri, cached: Boolean) : super(uri.path.let {
         it ?: throw NullPointerException("URI path should not be null")
@@ -74,11 +74,13 @@ class TreeFileX : SAFileX {
                 uri.displayName
         } ?: throw Exception("Unable to get name from Uri")
 
-        return uri.parent?.create(context, mimeType ?: "application/octet-stream", name) != null
+        return uri.parent?.create(context, mimeType ?: "application/octet-stream", name)?.let {
+            this.uri = it
+        } != null
     }
 
     override fun getParent() =
-        uri.parent.toString()
+        uri.parent?.toString()
 
     override fun getParentFile() = uri.parent?.let { parent ->
         FileX(context, parent, cached)
@@ -125,17 +127,29 @@ class TreeFileX : SAFileX {
 
         val name = this.name ?: return false
 
-        return uri.parent?.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name) != null
+        return uri.parent?.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.also {
+            this.uri = it
+        } != null
     }
 
     override fun mkdirs(): Boolean {
         if (uri.exists(context))
             return false
 
-        if (parentFile?.mkdirs() != true)
-            return false
+        return (this.parentFile?.let {
+            (it.mkdirs() || it.exists()) && mkdir()
+        }) ?: false
+    }
 
-        return mkdir()
+    override fun renameTo(dest: File): Boolean {
+        if (dest !is SAFileX)
+            throw UnsupportedOperationException("dest should be SAFileX")
+
+        val name = dest.name ?: throw Exception("Unable to get name from Uri")
+
+        return DocumentsContract.renameDocument(context.contentResolver, this.uri, name)?.also {
+            this.uri = it
+        } != null
     }
 
 }

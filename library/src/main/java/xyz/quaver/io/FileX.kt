@@ -20,13 +20,17 @@
  *     limitations under the License.
  */
 
+@file:SuppressWarnings("unused")
+
 package xyz.quaver.io
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
 import androidx.annotation.RequiresApi
+import androidx.core.net.toUri
 import xyz.quaver.io.util.*
 import java.io.File
 
@@ -76,7 +80,7 @@ class Cache(private val context: Context, private val uri: Uri) {
 abstract class FileX : File {
     internal constructor(path: String) : super(path)
 
-    protected lateinit var context: Context
+    internal lateinit var context: Context
     lateinit var uri: Uri
 
     var cached = false
@@ -127,3 +131,9 @@ fun FileX(context: Context, uri: String, cached: Boolean = false) =
 
 fun FileX(context: Context, parentUri: String, child: String, cached: Boolean = false) =
     FileX(context, Uri.parse(parentUri), child, cached)
+
+fun FileX(context: Context, file: File) =
+    RawFileX(context, file.toUri())
+
+fun FileX(context: Context, file: File, child: String) =
+    FileX(context, File(file, child))

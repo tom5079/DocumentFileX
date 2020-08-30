@@ -22,15 +22,17 @@
 
 package xyz.quaver.io
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.RequiresApi
-import xyz.quaver.io.util.*
+import java.io.File
 import java.io.FileFilter
 import java.io.FilenameFilter
 
 @RequiresApi(19)
 class DocumentFileX : SAFileX {
+    @SuppressWarnings("unused")
     private constructor() : super("") {
         throw UnsupportedOperationException("STOP! You violated the law.")
     }
@@ -48,7 +50,7 @@ class DocumentFileX : SAFileX {
     }
 
     override fun createNewFile() =
-        throw UnsupportedOperationException("Creating file is not supported on Document URI")
+        throw UnsupportedOperationException()
 
     override fun getParent() =
         throw UnsupportedOperationException()
@@ -75,5 +77,8 @@ class DocumentFileX : SAFileX {
         throw UnsupportedOperationException()
 
     override fun mkdirs() =
+        throw UnsupportedOperationException()
+
+    override fun renameTo(dest: File) =
         throw UnsupportedOperationException()
 }

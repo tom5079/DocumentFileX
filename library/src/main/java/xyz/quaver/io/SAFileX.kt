@@ -22,11 +22,16 @@
 
 package xyz.quaver.io
 
+import android.annotation.SuppressLint
 import androidx.annotation.RequiresApi
 import xyz.quaver.io.util.*
+import java.io.File
+import java.net.URI
+import java.nio.file.Path
 
 @RequiresApi(19)
 abstract class SAFileX : FileX {
+    @SuppressWarnings("unused")
     private constructor() : super("") {
         throw UnsupportedOperationException("STOP! You violated the law.")
     }
@@ -35,12 +40,12 @@ abstract class SAFileX : FileX {
 
     override fun canExecute() = false
 
-    override fun canRead() = when {
+    override fun canRead(): Boolean = when {
         cached -> cache.canRead
         else -> uri.canRead(context)
     }
 
-    override fun canWrite() = when {
+    override fun canWrite(): Boolean = when {
         cached -> cache.canWrite
         else -> uri.canWrite(context)
     }
@@ -57,11 +62,10 @@ abstract class SAFileX : FileX {
         return true
     }
 
-    override fun deleteOnExit() {
+    override fun deleteOnExit(): Unit =
         DeleteOnExitHook.add(uri)
-    }
 
-    override fun exists() = when {
+    override fun exists(): Boolean = when {
         cached -> cache.exists
         else -> uri.exists(context)
     }
@@ -69,28 +73,29 @@ abstract class SAFileX : FileX {
     override fun getAbsoluteFile() = canonicalFile
     override fun getAbsolutePath() = canonicalPath
 
-    override fun getCanonicalFile() = uri.toFile(context)
-    override fun getCanonicalPath() = canonicalFile?.canonicalPath
+    override fun getCanonicalFile(): File? = uri.toFile(context)
+    override fun getCanonicalPath(): String? = canonicalFile?.canonicalPath
 
-    override fun getName() = uri.name
-    override fun getPath() = uri.path
+    override fun getName(): String? = uri.name
+    override fun getPath(): String? = uri.path
 
-    override fun getFreeSpace() = kotlin.runCatching {
+    override fun getFreeSpace(): Long = kotlin.runCatching {
         canonicalFile?.freeSpace
     }.getOrNull() ?: throw UnsupportedOperationException()
 
-    override fun getTotalSpace() = kotlin.runCatching {
+    override fun getTotalSpace(): Long = kotlin.runCatching {
         canonicalFile?.totalSpace
     }.getOrNull() ?: throw UnsupportedOperationException()
 
-    override fun getUsableSpace() = kotlin.runCatching {
+    @SuppressLint("UsableSpace")
+    override fun getUsableSpace(): Long = kotlin.runCatching {
         canonicalFile?.usableSpace
     }.getOrNull() ?: throw UnsupportedOperationException()
 
-    override fun hashCode() =
+    override fun hashCode(): Int =
         uri.hashCode()
 
-    override fun equals(other: Any?) =
+    override fun equals(other: Any?): Boolean =
         this.hashCode() == other.hashCode()
 
     override fun isAbsolute() = true
@@ -100,18 +105,36 @@ abstract class SAFileX : FileX {
         else -> uri.isDirectory(context)
     }
 
-    override fun isFile() = !isDirectory
+    override fun isFile(): Boolean = !isDirectory
 
-    override fun isHidden() = name?.startsWith('.') ?: false
+    override fun isHidden(): Boolean = name?.startsWith('.') ?: false
 
-    override fun lastModified() = when {
+    override fun lastModified(): Long = when {
         cached -> cache.lastModified
         else -> uri.lastModified(context)
     } ?: 0L
 
-    override fun length() = when {
+    override fun length(): Long = when {
         cached -> cache.length
         else -> uri.length(context)
     } ?: 0L
+
+    override fun setExecutable(executable: Boolean) = throw UnsupportedOperationException()
+    override fun setExecutable(executable: Boolean, ownerOnly: Boolean) = throw UnsupportedOperationException()
+    override fun setLastModified(time: Long) = throw UnsupportedOperationException()
+    override fun setReadOnly() = throw UnsupportedOperationException()
+    override fun setReadable(readable: Boolean) = throw UnsupportedOperationException()
+    override fun setReadable(readable: Boolean, ownerOnly: Boolean) = throw UnsupportedOperationException()
+    override fun setWritable(writable: Boolean) = throw UnsupportedOperationException()
+    override fun setWritable(writable: Boolean, ownerOnly: Boolean) = throw UnsupportedOperationException()
+
+    @RequiresApi(26)
+    override fun toPath(): Path? =
+        canonicalFile?.toPath()
+
+    override fun toString(): String =
+        uri.toString()
+
+    override fun toURI(): URI = URI(uri.toString())
 
 }
