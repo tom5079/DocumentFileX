@@ -99,7 +99,7 @@ val Uri.isRoot: Boolean
 internal val String.documentIdSegments: List<String>
     get() = this.split(":")
 
-internal val Uri.documentIdSegment: List<String>?
+val Uri.documentIdSegment: List<String>?
     get() = this.niceDocumentId?.documentIdSegments
 
 /**

@@ -7,7 +7,9 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import xyz.quaver.io.FileX
+import xyz.quaver.io.util.delete
 import xyz.quaver.io.util.readText
+import java.nio.charset.Charset
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,12 +51,7 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     val uri = data?.data ?: return
 
-                    val file = FileX(this, uri, "test1/test2")
-                    Log.i("DocumentFileX-DEBUG", file.uri.toString())
-
-                    Log.i("DocumentFileX-DEBUG", file.mkdirs().toString())
-
-                    Log.i("DocumentFileX-DEBUG", file.uri.toString())
+                    Log.i("PUPILD", FileX(this, uri).delete().toString())
                 }
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
