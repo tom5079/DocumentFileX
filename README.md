@@ -50,7 +50,9 @@ if (neice.parent.mkdirs()) {
     neice.createNewFile()
     neice.renameTo(FileX(context, neice.parent, "kurokawa.json"))
 }
-// neice.createNewFileAndDirs
+
+// neice.createNewFileAndDirs()
+// neice.renameTo(FileX(context, neice.parent, "kurokawa.json"))
 
 folder.listFiles().forEach { sichouson -> // Returns FileX
     sichouson.list().forEach { // Returns Uri string
