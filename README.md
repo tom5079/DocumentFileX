@@ -41,16 +41,17 @@ val text = file.readText(data, Charset.forName(<small quiz for you>))
 ### Directory I/O
 Directory I/O is only supported by `tree://...` URI
 ```kotlin
-val file = FileX(context, uri, "akita") // No overhead
-val neighbor = FileX(context, file.parent, "yamagata") // No overhead
-val neice = FileX(context, file.parent, "iwate/morioka/nakano.txt") //No overhead
+val folder = FileX(context, uri, "akita") // No overhead
+val child = folder.getChild("daisen") // No overhead
+val neighbor = FileX(context, folder.parent, "yamagata") // No overhead
+val neice = FileX(context, folder.parent, "iwate/morioka/nakano.txt") // No overhead
 
 if (neice.parent.mkdirs()) {
     neice.createNewFile()
     neice.renameTo(FileX(context, neice.parent, "kurokawa.json"))
 }
 
-file.listFiles().forEach { sichouson -> // Returns FileX
+folder.listFiles().forEach { sichouson -> // Returns FileX
     sichouson.list().forEach { // Returns Uri string
         ....
     }
