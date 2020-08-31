@@ -12,7 +12,7 @@ Tired of SAF bullshits? Implement SAF with ease!
  - Automatic URI type detection
  - File metadata caching
  - Useful URI extensions
- - (WIP) kotlin-stdlib File extension-like extension methods
+ - (WIP) kotlin-stdlib File extension compatible extension methods
 
 ## Setup
 ```gradle
