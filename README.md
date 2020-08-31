@@ -17,7 +17,7 @@ Tired of SAF bullshits? Implement SAF with ease!
 ## Setup
 ```gradle
 dependencies {
-    implementation 'xyz.quaver:documentfilex:0.2.4'
+    implementation 'xyz.quaver:documentfilex:0.2.5'
 }
 ```
 
@@ -50,6 +50,7 @@ if (neice.parent.mkdirs()) {
     neice.createNewFile()
     neice.renameTo(FileX(context, neice.parent, "kurokawa.json"))
 }
+// neice.createNewFileAndDirs
 
 folder.listFiles().forEach { sichouson -> // Returns FileX
     sichouson.list().forEach { // Returns Uri string
