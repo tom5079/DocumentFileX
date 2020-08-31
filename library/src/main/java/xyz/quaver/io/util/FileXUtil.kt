@@ -25,4 +25,4 @@ package xyz.quaver.io.util
 import xyz.quaver.io.FileX
 
 fun FileX.getChild(child: String, cached: Boolean = false): FileX =
-    FileX(this.context, child, cached)
+    FileX(this.context, this, child, cached)
