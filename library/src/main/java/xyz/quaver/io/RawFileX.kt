@@ -45,4 +45,8 @@ class RawFileX : FileX {
         // Does nothing
     }
 
+    override fun delete(): Boolean {
+        return this.deleteRecursively()
+    }
+
 }

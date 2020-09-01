@@ -26,8 +26,3 @@ import xyz.quaver.io.FileX
 
 fun FileX.getChild(child: String, cached: Boolean = false): FileX =
     FileX(this.context, this, child, cached)
-
-fun FileX.createNewFileAndDirs() {
-    this.parentFile?.mkdirs()
-    this.createNewFile()
-}
