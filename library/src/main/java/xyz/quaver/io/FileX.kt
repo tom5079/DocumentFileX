@@ -24,7 +24,6 @@
 
 package xyz.quaver.io
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Build
@@ -101,7 +100,7 @@ fun FileX(context: Context, parent: FileX, child: String, cached: Boolean = fals
 
 fun FileX(context: Context, parent: Uri, child: String, cached: Boolean = false): FileX {
     return when {
-        parent.hasTreeUri && Build.VERSION.SDK_INT >= 21 ->
+        parent.isTreeUri && Build.VERSION.SDK_INT >= 21 ->
             TreeFileX(context, parent, child, cached)
         parent.isDocumentUri ->
             throw UnsupportedOperationException("Getting child of the Single URI is not supported")
@@ -115,7 +114,7 @@ fun FileX(context: Context, parent: Uri, child: String, cached: Boolean = false)
 
 fun FileX(context: Context, uri: Uri, cached: Boolean = false): FileX {
     return when {
-        uri.hasTreeUri && Build.VERSION.SDK_INT >= 21 ->
+        uri.isTreeUri && Build.VERSION.SDK_INT >= 21 ->
             TreeFileX(context, uri, cached)
         uri.isDocumentUri && Build.VERSION.SDK_INT >= 19->
             DocumentFileX(context, uri, cached)

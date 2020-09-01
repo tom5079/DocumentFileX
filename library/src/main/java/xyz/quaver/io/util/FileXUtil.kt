@@ -22,7 +22,18 @@
 
 package xyz.quaver.io.util
 
+import android.annotation.SuppressLint
 import xyz.quaver.io.FileX
+import xyz.quaver.io.RawFileX
+import xyz.quaver.io.SAFileX
 
 fun FileX.getChild(child: String, cached: Boolean = false): FileX =
     FileX(this.context, this, child, cached)
+
+@SuppressLint("NewApi")
+fun FileX.deleteRecursively(): Boolean =
+    when (this) {
+        is SAFileX -> this.uri.delete(this.context)
+        is RawFileX -> this.deleteRecursively()
+        else -> throw UnsupportedOperationException()
+    }

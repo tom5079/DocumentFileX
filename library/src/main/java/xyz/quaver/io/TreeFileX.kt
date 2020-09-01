@@ -79,6 +79,15 @@ class TreeFileX : SAFileX {
         } != null
     }
 
+    override fun delete(): Boolean =
+        if (this.isDirectory) {
+            if (this.list().isEmpty())
+                uri.delete(context)
+            else
+                false
+        } else
+            uri.delete(context)
+
     override fun getParent() =
         uri.parent?.toString()
 
@@ -89,7 +98,7 @@ class TreeFileX : SAFileX {
     override fun list() =
         uri.list(context).map { it.toString() }.toTypedArray()
 
-    override fun list(filter: FilenameFilter?): Array<String>? {
+    override fun list(filter: FilenameFilter?): Array<String> {
         if (filter !is FilenameFilterX)
             throw UnsupportedOperationException("Filter should be FilenameFilterX")
 
@@ -103,7 +112,7 @@ class TreeFileX : SAFileX {
     override fun listFiles() =
         uri.list(context).map { FileX(context, it) }.toTypedArray()
 
-    override fun listFiles(filter: FileFilter?): Array<File>? {
+    override fun listFiles(filter: FileFilter?): Array<File> {
         if (filter !is FileFilterX)
             throw UnsupportedOperationException("Filter should be FileFilterX")
 
@@ -112,7 +121,7 @@ class TreeFileX : SAFileX {
         }.toTypedArray()
     }
 
-    override fun listFiles(filter: FilenameFilter?): Array<File>? {
+    override fun listFiles(filter: FilenameFilter?): Array<File> {
         if (filter !is FilenameFilterX)
             throw UnsupportedOperationException("Filter should be FilenameFilterX")
 

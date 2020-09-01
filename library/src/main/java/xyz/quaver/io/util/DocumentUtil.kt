@@ -67,10 +67,6 @@ val Uri.treeDocumentId: String?
     }
 
 val Uri.isTreeUri: Boolean
-    get() = this.pathSegments.let { paths ->
-        paths.size == 2 && paths[0] == PATH_TREE
-    }
-val Uri.hasTreeUri: Boolean
     get() = this.treeDocumentId != null
 
 val Uri.documentId: String?
@@ -164,7 +160,7 @@ val Uri?.niceDocumentId: String?
  */
 @RequiresApi(21)
 fun Uri.getChildUri(child: String): Uri {
-    if (!this.hasTreeUri)
+    if (!this.isTreeUri)
         throw UnsupportedOperationException("Only Tree Uri is allowed")
 
     val childDocumentId =
@@ -192,7 +188,7 @@ fun Uri.getChildUri(child: String): Uri {
  */
 @RequiresApi(21)
 fun Uri.getNeighborUri(filename: String): Uri? {
-    if (!this.hasTreeUri)
+    if (!this.isTreeUri)
         throw UnsupportedOperationException("Only Tree Uri is allowed")
 
     val neighborDocumentId = this.documentIdPathSegments!!.let {
@@ -254,7 +250,7 @@ inline fun <reified T> Uri.query(context: Context, columnName: String) : T? {
 val Uri.parent: Uri?
     @RequiresApi(21)
     get() {
-        if (!this.hasTreeUri)
+        if (!this.isTreeUri)
             throw UnsupportedOperationException("Only Tree Uri is allowed")
 
         val parentDocumentId =
@@ -377,7 +373,7 @@ fun Uri.length(context: Context) =
 
 @RequiresApi(21)
 fun Uri.list(context: Context): List<Uri> {
-    if (!this.hasTreeUri)
+    if (!this.isTreeUri)
         throw UnsupportedOperationException("Only Tree Uri is allowed")
 
     val children = DocumentsContract.buildChildDocumentsUriUsingTree(this, this.treeDocumentId)

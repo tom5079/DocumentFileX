@@ -50,18 +50,6 @@ abstract class SAFileX : FileX {
         else -> uri.canWrite(context)
     }
 
-    override fun delete(): Boolean {
-        if (!uri.exists(context))
-            return false
-
-        uri.delete(context)
-
-        if (uri.exists(context))
-            return false
-
-        return true
-    }
-
     override fun deleteOnExit(): Unit =
         DeleteOnExitHook.add(uri)
 

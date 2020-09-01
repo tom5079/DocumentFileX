@@ -26,6 +26,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.RequiresApi
+import xyz.quaver.io.util.delete
+import xyz.quaver.io.util.exists
 import java.io.File
 import java.io.FileFilter
 import java.io.FilenameFilter
@@ -51,6 +53,8 @@ class DocumentFileX : SAFileX {
 
     override fun createNewFile() =
         throw UnsupportedOperationException()
+
+    override fun delete() = uri.delete(context)
 
     override fun getParent() =
         throw UnsupportedOperationException()
