@@ -3,6 +3,8 @@ java.io.File compatible SAF implementation
 
 Tired of SAF bullshits? Implement SAF with ease!
 
+**This library is in early alpha stage. Note that the library might not work as intended.**
+
 ### Features
  - Interoperable with java.io.File with some exceptions
  - File.getName() without overhead
