@@ -136,7 +136,7 @@ class TreeFileX : SAFileX {
 
         val name = this.name ?: return false
 
-        return uri.parent?.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.also {
+        return uri.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.also {
             this.uri = it
         } != null
     }
