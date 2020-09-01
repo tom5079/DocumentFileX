@@ -26,6 +26,7 @@ import android.annotation.SuppressLint
 import xyz.quaver.io.FileX
 import xyz.quaver.io.RawFileX
 import xyz.quaver.io.SAFileX
+import java.io.File
 
 fun FileX.getChild(child: String, cached: Boolean = false): FileX =
     FileX(this.context, this, child, cached)
@@ -34,6 +35,6 @@ fun FileX.getChild(child: String, cached: Boolean = false): FileX =
 fun FileX.deleteRecursively(): Boolean =
     when (this) {
         is SAFileX -> this.uri.delete(this.context)
-        is RawFileX -> this.deleteRecursively()
+        is RawFileX -> File(this.path). deleteRecursively()
         else -> throw UnsupportedOperationException()
     }
