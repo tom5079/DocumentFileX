@@ -45,8 +45,7 @@ class RawFileX : FileX {
         // Does nothing
     }
 
-    override fun delete(): Boolean {
-        return this.deleteRecursively()
-    }
+    override fun delete() =
+        walkBottomUp().fold(true, { res, it -> (super.delete() || !it.exists()) && res })
 
 }
