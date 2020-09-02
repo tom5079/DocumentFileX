@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import xyz.quaver.io.FileX
 import xyz.quaver.io.util.delete
+import xyz.quaver.io.util.getExternalStoragePaths
 import xyz.quaver.io.util.readText
 import java.nio.charset.Charset
 
@@ -15,6 +16,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        Log.i("DOCX", getExternalStoragePaths().toString())
 
         text.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
@@ -52,8 +55,10 @@ class MainActivity : AppCompatActivity() {
 
                     val file = FileX(this, uri)
 
-                    file.list()?.forEach {
-                        Log.i("DOCX", it)
+                    Log.i("DOCX", file.canonicalPath)
+
+                    file.walk().forEach {
+                        Log.i("DOCX", it.toString())
                     }
                 }
             }

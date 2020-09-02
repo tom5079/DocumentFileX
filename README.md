@@ -19,7 +19,7 @@ Tired of SAF bullshits? Implement SAF with ease!
 ## Setup
 ```gradle
 dependencies {
-    implementation 'xyz.quaver:documentfilex:0.2.11'
+    implementation 'xyz.quaver:documentfilex:0.2.12'
 }
 ```
 
@@ -32,7 +32,7 @@ val file = FileX(context, uri)
 file.writeText("Hello, SAF! You're dumb.")
 val text = file.readText() // "Hello, SAF! You're dumb."
 
-val data = listOf(0x82, 0x72, 0x82, 0x60, 0x82, 0x65, 0x82, 0xA4, 0x82, 0xF1, 0x82, 0xBF).map { 
+val data = listOf(0x82, 0x72, 0x82, 0x60, 0x82, 0x65, 0x82, 0xA4, 0x82, 0xF1, 0x82, 0xBF).map {
     it.toByte()
 }.toByteArray()
 
@@ -74,8 +74,8 @@ With constructor:
 FileX(..., cached=true)
 ```
 With an instance:
-You can call `invalidate()` anytime you want to update Cache even when `cached` is false.  
-However, cached data will only be used by the FileX instance when the property `cached` is true.  
+You can call `invalidate()` anytime you want to update Cache even when `cached` is false.
+However, cached data will only be used by the FileX instance when the property `cached` is true.
 Alternatively you can directly access the cache with `FileX.cache`
 ```kotlin
 file.cached = true
@@ -84,7 +84,7 @@ file.invalidate()
 
 You can update the cache with `FileX.invalidate()` or `Cache.invalidate`
 
-Caching might impact the performance when large amounts of instances are created.  
+Caching might impact the performance when large amounts of instances are created.
 Enable cache when both of these criteria are met:
  - Frequent Access to the File properties
  - Not a lot of instances are crated at the same time

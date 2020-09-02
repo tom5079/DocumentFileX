@@ -30,7 +30,7 @@ import java.io.FileFilter
 import java.io.FilenameFilter
 
 fun Context.getExternalStoragePaths() =
-    ContextCompat.getExternalFilesDirs(this, null).drop(1).map {
+    ContextCompat.getExternalFilesDirs(this, null).drop(1).filterNotNull().map {
         it.absolutePath.substringBeforeLast("/Android/data").let {  path ->
             runCatching {
                 File(path).canonicalPath

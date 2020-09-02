@@ -23,13 +23,18 @@
 package xyz.quaver.io.util
 
 import android.annotation.SuppressLint
+import androidx.annotation.RequiresApi
 import xyz.quaver.io.FileX
 import xyz.quaver.io.RawFileX
 import xyz.quaver.io.SAFileX
 import java.io.File
 
-fun FileX.getChild(child: String, cached: Boolean = false): FileX =
-    FileX(this.context, this, child, cached)
+fun FileX.getChild(fileName: String, cached: Boolean = false): FileX =
+    FileX(this.context, this, fileName, cached)
+
+@RequiresApi(21)
+fun FileX.getNeighbor(fileName: String, cached: Boolean = false): FileX =
+    FileX(this.context, this.uri.getNeighborUri(fileName), cached)
 
 @SuppressLint("NewApi")
 fun FileX.deleteRecursively(): Boolean =

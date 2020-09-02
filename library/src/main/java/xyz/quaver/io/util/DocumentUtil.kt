@@ -187,7 +187,7 @@ fun Uri.getChildUri(child: String): Uri {
  * @see Uri.isExternalStorageDocument
  */
 @RequiresApi(21)
-fun Uri.getNeighborUri(filename: String): Uri? {
+fun Uri.getNeighborUri(filename: String): Uri {
     if (!this.isTreeUri)
         throw UnsupportedOperationException("Only Tree Uri is allowed")
 
@@ -233,16 +233,18 @@ val Uri.extension: String?
 inline fun <reified T> Uri.query(context: Context, columnName: String) : T? {
     return kotlin.runCatching {
         context.contentResolver.query(this, arrayOf(columnName), null, null, null)?.use {
-            when (T::class) {
-                String::class -> it.getString(0)
-                Int::class -> it.getInt(0)
-                Long::class -> it.getLong(0)
-                Float::class -> it.getFloat(0)
-                Double::class -> it.getDouble(0)
-                Short::class -> it.getShort(0)
-                ByteArray::class -> it.getBlob(0)
-                else -> null
-            } as T
+            if (it.moveToFirst()) {
+                when (T::class) {
+                    String::class -> it.getString(0)
+                    Int::class -> it.getInt(0)
+                    Long::class -> it.getLong(0)
+                    Float::class -> it.getFloat(0)
+                    Double::class -> it.getDouble(0)
+                    Short::class -> it.getShort(0)
+                    ByteArray::class -> it.getBlob(0)
+                    else -> null
+                } as T
+            } else null
         }
     }.getOrNull()
 }
@@ -394,7 +396,7 @@ fun Uri.list(context: Context): List<Uri> {
     if (!this.isTreeUri)
         throw UnsupportedOperationException("Only Tree Uri is allowed")
 
-    val children = DocumentsContract.buildChildDocumentsUriUsingTree(this, this.treeDocumentId)
+    val children = DocumentsContract.buildChildDocumentsUriUsingTree(this, this.niceDocumentId)
     val result = mutableListOf<String>()
 
     kotlin.runCatching {

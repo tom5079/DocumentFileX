@@ -42,14 +42,14 @@ class TreeFileX : SAFileX {
     constructor(context: Context, parent: Uri, child: String, cached: Boolean)
         : this(context, parent.getChildUri(child), cached)
 
-    constructor(context: Context, uri: Uri, cached: Boolean) : super(uri.toFile(context)?.path.let {
+    constructor(context: Context, uri: Uri, cached: Boolean) : super(uri.path.let {
         it ?: throw NullPointerException("URI path should not be null")
     }) {
         this.context = context
         this.uri = uri
 
         if (!this.uri.isExternalStorageDocument)
-            throw UnsupportedOperationException("Only supports External Storage Document URI ...yet")
+            throw UnsupportedOperationException("Only supports External Storage Document URI")
 
         this.uri = DocumentsContract.buildDocumentUriUsingTree(uri, when {
             uri.isDocumentUri -> uri.documentId
