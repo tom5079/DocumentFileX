@@ -23,7 +23,6 @@
 package xyz.quaver.io
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.webkit.MimeTypeMap
@@ -75,16 +74,16 @@ class TreeFileX : SAFileX {
                 uri.displayName
         } ?: throw Exception("Unable to get name from Uri")
 
-        return try {
-            uri.parent.create(context, mimeType ?: "application/octet-stream", name)?.let {
+        if (parentFile.exists())
+            return uri.parent.create(context, mimeType ?: "application/octet-stream", name)?.let {
                 this.uri = it
             } != null
-        } catch (e: SecurityException) {
-            // We don't have access to the Grandparent directory
-            uri.parentAsTree.create(context, mimeType ?: "application/octet-stream", name)?.let {
+        if (parentAsTree.exists())
+            return uri.parentAsTree.create(context, mimeType ?: "application/octet-stream", name)?.let {
                 this.uri = it
             } != null
-        }
+
+        return false
     }
 
     override fun delete(): Boolean =
@@ -146,18 +145,16 @@ class TreeFileX : SAFileX {
 
         val name = this.name ?: return false
 
-        return try {
-            uri.parent.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.let {
-                context.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        if (parentFile.exists())
+            return uri.parent.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.let {
                 this.uri = it
             } != null
-        } catch (e: SecurityException) {
-            // We don't have access to the Grandparent directory
-            uri.parentAsTree.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.let {
-                context.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        if (parentAsTree.exists())
+            return uri.parentAsTree.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.let {
                 this.uri = it
             } != null
-        }
+
+        return false
     }
 
     override fun mkdirs(): Boolean {

@@ -7,10 +7,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import xyz.quaver.io.FileX
-import xyz.quaver.io.util.delete
-import xyz.quaver.io.util.getExternalStoragePaths
-import xyz.quaver.io.util.readText
-import java.nio.charset.Charset
+import xyz.quaver.io.util.*
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,11 +52,13 @@ class MainActivity : AppCompatActivity() {
 
                     val file = FileX(this, uri)
 
-                    Log.i("DOCX", file.canonicalPath)
+                    val child = file.getChild(".download")
 
-                    file.walk().forEach {
-                        Log.i("DOCX", it.toString())
-                    }
+                    Log.i("DOCX", child.toString())
+                    Log.i("DOCX", child.createNewFile().toString())
+                    Log.i("DOCX", child.writeText("test").toString())
+                    Log.i("DOCX", child.readText().toString())
+                    Log.i("DOCX", child.toString())
                 }
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
