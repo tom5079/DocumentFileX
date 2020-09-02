@@ -39,19 +39,22 @@ class MainActivity : AppCompatActivity() {
         when(requestCode) {
             42 -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    data?.data?.also { uri ->
-                        val file = FileX(this, uri)
+                    val uri = data?.data ?: return
 
-                        Log.i("DocumentFileX-DEBUG", uri.readText(this).toString())
-                        Log.i("DocumentFileX-DEBUG", file.readText().toString())
-                    }
+                    val file = FileX(this, uri)
+
+                    Log.i("DOCX", file.readText().toString())
                 }
             }
             43 -> {
                 if (resultCode == Activity.RESULT_OK) {
                     val uri = data?.data ?: return
 
-                    Log.i("PUPILD", FileX(this, uri).delete().toString())
+                    val file = FileX(this, uri)
+
+                    file.list()?.forEach {
+                        Log.i("DOCX", it)
+                    }
                 }
             }
             else -> super.onActivityResult(requestCode, resultCode, data)

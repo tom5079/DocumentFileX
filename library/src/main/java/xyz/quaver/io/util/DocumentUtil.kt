@@ -247,14 +247,32 @@ inline fun <reified T> Uri.query(context: Context, columnName: String) : T? {
     }.getOrNull()
 }
 
-val Uri.parent: Uri?
+val Uri.parentAsTree: Uri
     @RequiresApi(21)
     get() {
         if (!this.isTreeUri)
             throw UnsupportedOperationException("Only Tree Uri is allowed")
 
         val parentDocumentId =
-            createNewDocumentId(volumeId!!, this.documentIdPathSegments!!
+            createNewDocumentId(this.volumeId!!, this.documentIdPathSegments!!
+                .dropLast(1)
+                .joinToString("/")
+            )
+
+        return DocumentsContract.buildDocumentUriUsingTree(
+            DocumentsContract.buildTreeDocumentUri(authority, parentDocumentId),
+            parentDocumentId
+        )
+    }
+
+val Uri.parent: Uri
+    @RequiresApi(21)
+    get() {
+        if (!this.isTreeUri)
+            throw UnsupportedOperationException("Only Tree Uri is allowed")
+
+        val parentDocumentId =
+            createNewDocumentId(this.volumeId!!, this.documentIdPathSegments!!
                 .dropLast(1)
                 .joinToString("/")
             )

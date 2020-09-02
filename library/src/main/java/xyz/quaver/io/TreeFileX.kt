@@ -23,6 +23,7 @@
 package xyz.quaver.io
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.webkit.MimeTypeMap
@@ -41,14 +42,14 @@ class TreeFileX : SAFileX {
     constructor(context: Context, parent: Uri, child: String, cached: Boolean)
         : this(context, parent.getChildUri(child), cached)
 
-    constructor(context: Context, uri: Uri, cached: Boolean) : super(uri.path.let {
+    constructor(context: Context, uri: Uri, cached: Boolean) : super(uri.toFile(context)?.path.let {
         it ?: throw NullPointerException("URI path should not be null")
     }) {
         this.context = context
         this.uri = uri
 
         if (!this.uri.isExternalStorageDocument)
-            throw UnsupportedOperationException("Only supports External Storage Document URI")
+            throw UnsupportedOperationException("Only supports External Storage Document URI ...yet")
 
         this.uri = DocumentsContract.buildDocumentUriUsingTree(uri, when {
             uri.isDocumentUri -> uri.documentId
@@ -74,9 +75,16 @@ class TreeFileX : SAFileX {
                 uri.displayName
         } ?: throw Exception("Unable to get name from Uri")
 
-        return uri.parent?.create(context, mimeType ?: "application/octet-stream", name)?.let {
-            this.uri = it
-        } != null
+        return try {
+            uri.parent.create(context, mimeType ?: "application/octet-stream", name)?.let {
+                this.uri = it
+            } != null
+        } catch (e: SecurityException) {
+            // We don't have access to the Grandparent directory
+            uri.parentAsTree.create(context, mimeType ?: "application/octet-stream", name)?.let {
+                this.uri = it
+            } != null
+        }
     }
 
     override fun delete(): Boolean =
@@ -89,11 +97,13 @@ class TreeFileX : SAFileX {
             uri.delete(context)
 
     override fun getParent() =
-        uri.parent?.toString()
+        uri.parent.toString()
 
-    override fun getParentFile() = uri.parent?.let { parent ->
-        FileX(context, parent, cached)
-    }
+    override fun getParentFile() =
+        FileX(context, uri.parent, cached)
+
+    val parentAsTree: FileX
+        get() = FileX(context, uri.parentAsTree, cached)
 
     override fun list() =
         uri.list(context).map { it.toString() }.toTypedArray()
@@ -136,18 +146,35 @@ class TreeFileX : SAFileX {
 
         val name = this.name ?: return false
 
-        return uri.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.also {
-            this.uri = it
-        } != null
+        return try {
+            uri.parent.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.let {
+                context.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                this.uri = it
+            } != null
+        } catch (e: SecurityException) {
+            // We don't have access to the Grandparent directory
+            uri.parentAsTree.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.let {
+                context.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                this.uri = it
+            } != null
+        }
     }
 
     override fun mkdirs(): Boolean {
+        if (uri.isRoot)
+            return false
+
         if (uri.exists(context))
             return false
 
-        return (this.parentFile?.let {
+        val parentAsTree = uri.parentAsTree
+
+        if (parentAsTree.exists(context))
+            return parentAsTree.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name!!) != null
+
+        return this.parentFile.let {
             (it.mkdirs() || it.exists()) && mkdir()
-        }) ?: false
+        }
     }
 
     override fun renameTo(dest: File): Boolean {

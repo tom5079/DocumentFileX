@@ -6,7 +6,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
-import xyz.quaver.io.util.parent
+import xyz.quaver.io.util.parentAsTree
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -26,6 +26,6 @@ class ExampleInstrumentedTest {
     fun parent() {
         val uri = Uri.parse("content://com.android.externalstorage.documents/tree/primary%3Atest1/document/primary%3Atest1%2Ftest2")
 
-        assertEquals("content://com.android.externalstorage.documents/tree/primary%3A/document/primary%3Atest1", uri.parent.toString())
+        assertEquals("content://com.android.externalstorage.documents/tree/primary%3A/document/primary%3Atest1", uri.parentAsTree.toString())
     }
 }
