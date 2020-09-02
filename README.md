@@ -46,15 +46,12 @@ Directory I/O is only supported by `tree://...` URI
 val folder = FileX(context, uri, "akita") // No overhead
 val child = folder.getChild("daisen") // No overhead
 val neighbor = FileX(context, folder.parent, "yamagata") // No overhead
-val neice = FileX(context, folder.parent, "iwate/morioka/nakano.txt") // No overhead
+val neice = folder.getNeighbor("iwate/morioka/nakano.txt") // No overhead
 
 if (neice.parent.mkdirs()) {
     neice.createNewFile()
     neice.renameTo(FileX(context, neice.parent, "kurokawa.json"))
 }
-
-// neice.createNewFileAndDirs()
-// neice.renameTo(FileX(context, neice.parent, "kurokawa.json"))
 
 folder.listFiles().forEach { sichouson -> // Returns FileX
     sichouson.list().forEach { // Returns Uri string
