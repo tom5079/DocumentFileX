@@ -39,13 +39,3 @@ fun Context.getExternalStoragePaths() =
             }
         }
     }
-
-abstract class FilenameFilterX : FilenameFilter {
-    fun accept(dir: FileX?, name: String?): Boolean =
-        accept(dir, name)
-}
-
-abstract class FileFilterX : FileFilter {
-    fun accept(pathname: FileX?): Boolean =
-        accept(pathname)
-}

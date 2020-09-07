@@ -19,7 +19,7 @@ Tired of SAF bullshits? Implement SAF with ease!
 ## Setup
 ```gradle
 dependencies {
-    implementation 'xyz.quaver:documentfilex:0.2.13'
+    implementation 'xyz.quaver:documentfilex:0.2.14'
 }
 ```
 

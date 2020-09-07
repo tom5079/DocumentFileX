@@ -169,15 +169,7 @@ fun Uri.getChildUri(child: String): Uri {
         else
             "${this.niceDocumentId}/$child"
 
-    val treeDocumentId = createNewDocumentId(
-        this.volumeId!!,
-        childDocumentId.documentIdPathSegments!!.dropLast(1).joinToString("/")
-    )
-
-    return DocumentsContract.buildDocumentUriUsingTree(
-        DocumentsContract.buildTreeDocumentUri(authority, treeDocumentId),
-        childDocumentId
-    )
+    return DocumentsContract.buildDocumentUriUsingTree(this, childDocumentId)
 }
 /**
  * Returns a Uri that points a file with a given filename in the same directory
@@ -200,10 +192,7 @@ fun Uri.getNeighborUri(filename: String): Uri {
             }
     }.joinToString("/")
 
-    return DocumentsContract.buildDocumentUriUsingTree(
-        DocumentsContract.buildTreeDocumentUri(authority, treeDocumentId),
-        createNewDocumentId(volumeId!!, neighborDocumentId)
-    )
+    return DocumentsContract.buildDocumentUriUsingTree(this, createNewDocumentId(volumeId!!, neighborDocumentId))
 }
 
 val Uri.name: String?
@@ -249,24 +238,6 @@ inline fun <reified T> Uri.query(context: Context, columnName: String) : T? {
     }.getOrNull()
 }
 
-val Uri.parentAsTree: Uri
-    @RequiresApi(21)
-    get() {
-        if (!this.isTreeUri)
-            throw UnsupportedOperationException("Only Tree Uri is allowed")
-
-        val parentDocumentId =
-            createNewDocumentId(this.volumeId!!, this.documentIdPathSegments!!
-                .dropLast(1)
-                .joinToString("/")
-            )
-
-        return DocumentsContract.buildDocumentUriUsingTree(
-            DocumentsContract.buildTreeDocumentUri(authority, parentDocumentId),
-            parentDocumentId
-        )
-    }
-
 val Uri.parent: Uri
     @RequiresApi(21)
     get() {
@@ -279,15 +250,7 @@ val Uri.parent: Uri
                 .joinToString("/")
             )
 
-        val treeDocumentId = createNewDocumentId(
-            this.volumeId!!,
-            parentDocumentId.documentIdPathSegments!!.dropLast(1).joinToString("/")
-        )
-
-        return DocumentsContract.buildDocumentUriUsingTree(
-            DocumentsContract.buildTreeDocumentUri(authority, treeDocumentId),
-            parentDocumentId
-        )
+        return DocumentsContract.buildDocumentUriUsingTree(this, parentDocumentId)
     }
 
 fun Uri.writeText(context: Context, str: String) =
