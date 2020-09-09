@@ -89,7 +89,11 @@ fun SAFileX.readBytes(): ByteArray? = inputStream()?.use { input ->
 }
 
 fun SAFileX.writeBytes(array: ByteArray) {
-    outputStream()?.use { it.write(array) }
+    outputStream()?.use {
+        it as FileOutputStream
+        it.channel.truncate(0)
+        it.write(array)
+    }
 }
 
 fun SAFileX.appendBytes(array: ByteArray) {
