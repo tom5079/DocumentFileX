@@ -47,9 +47,6 @@ class TreeFileX : SAFileX {
         this.context = context
         this.uri = uri
 
-        if (!this.uri.isExternalStorageDocument)
-            throw UnsupportedOperationException("Only supports External Storage Document URI")
-
         this.uri = DocumentsContract.buildDocumentUriUsingTree(uri, when {
             uri.isDocumentUri -> uri.documentId
             else -> uri.treeDocumentId
@@ -95,7 +92,7 @@ class TreeFileX : SAFileX {
         uri.parent.toString()
 
     override fun getParentFile() =
-        FileX(context, uri.parent, cached)
+        FileX(context, uri.parent, cached = cached)
 
     override fun list() =
         uri.list(context).map { it.toString() }.toTypedArray()

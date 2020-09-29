@@ -30,11 +30,11 @@ import java.nio.charset.Charset
 
 // ===== EXTENSIONS ====
 // From Kotlin Standard Library (https://github.com/JetBrains/kotlin/blob/master/libraries/stdlib/jvm/src/kotlin/io/FileReadWrite.kt)
-fun SAFileX.inputStream(): InputStream? =
-    context.contentResolver.openInputStream(this.uri)
+fun SAFileX.inputStream(): FileInputStream? =
+    context.contentResolver.openInputStream(this.uri) as FileInputStream
 
-fun SAFileX.outputStream(mode: String = "w"): OutputStream? =
-    context.contentResolver.openOutputStream(this.uri, mode)
+fun SAFileX.outputStream(mode: String = "w"): FileOutputStream? =
+    context.contentResolver.openOutputStream(this.uri, mode) as FileOutputStream
 
 fun SAFileX.reader(charset: Charset = Charsets.UTF_8): InputStreamReader? =
     inputStream()?.reader(charset)
@@ -90,7 +90,6 @@ fun SAFileX.readBytes(): ByteArray? = inputStream()?.use { input ->
 
 fun SAFileX.writeBytes(array: ByteArray) {
     outputStream()?.use {
-        it as FileOutputStream
         it.channel.truncate(0)
         it.write(array)
     }

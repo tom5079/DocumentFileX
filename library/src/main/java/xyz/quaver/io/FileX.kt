@@ -95,44 +95,36 @@ abstract class FileX : File {
         uri.compareTo(other.uri)
 }
 
-fun FileX(context: Context, parent: FileX, child: String, cached: Boolean = false) =
-    FileX(context, parent.uri, child, cached)
+fun FileX(context: Context, parent: File, child: String? = null, cached: Boolean = false): FileX {
+    return when (parent) {
+        is FileX ->
+            FileX(context, parent.uri, child, cached)
+        else ->
+            FileX(context, parent.toUri(), child, cached)
+    }
+}
 
-fun FileX(context: Context, parent: Uri, child: String, cached: Boolean = false): FileX {
+fun FileX(context: Context, parent: Uri, child: String? = null, cached: Boolean = false): FileX {
     return when {
-        parent.isTreeUri && Build.VERSION.SDK_INT >= 21 ->
-            TreeFileX(context, parent, child, cached)
-        parent.isDocumentUri ->
-            throw UnsupportedOperationException("Getting child of the Single URI is not supported")
-        // Should never ever run
+        parent.isTreeUri && parent.isExternalStorageDocument && Build.VERSION.SDK_INT >= 21  ->
+            if (child == null)
+                TreeFileX(context, parent, cached)
+            else
+                TreeFileX(context, parent, child, cached)
+        parent.isDocumentUri && Build.VERSION.SDK_INT >= 19 ->
+            if (child == null)
+                DocumentFileX(context, parent, cached)
+            else
+                throw UnsupportedOperationException("Getting child of the Single URI is not supported")
         parent.isFileUri ->
-            RawFileX(context, parent, child)
+            if (child == null)
+                RawFileX(context, parent)
+            else
+                RawFileX(context, parent, child)
         else ->
-            throw UnsupportedOperationException("Nah, not gonna work")
+            throw UnsupportedOperationException("Unsupported URI / Android API Level is too low for this device")
     }
 }
 
-fun FileX(context: Context, uri: Uri, cached: Boolean = false): FileX {
-    return when {
-        uri.isTreeUri && Build.VERSION.SDK_INT >= 21 ->
-            TreeFileX(context, uri, cached)
-        uri.isDocumentUri && Build.VERSION.SDK_INT >= 19->
-            DocumentFileX(context, uri, cached)
-        uri.isFileUri ->
-            RawFileX(context, uri)
-        else ->
-            throw UnsupportedOperationException("Unsupported URI")
-    }
-}
-
-fun FileX(context: Context, uri: String, cached: Boolean = false) =
-    FileX(context, Uri.parse(uri), cached)
-
-fun FileX(context: Context, parentUri: String, child: String, cached: Boolean = false) =
+fun FileX(context: Context, parentUri: String, child: String? = null, cached: Boolean = false) =
     FileX(context, Uri.parse(parentUri), child, cached)
-
-fun FileX(context: Context, file: File) =
-    RawFileX(context, file.toUri())
-
-fun FileX(context: Context, file: File, child: String) =
-    FileX(context, File(file, child))

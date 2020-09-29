@@ -30,11 +30,11 @@ import xyz.quaver.io.SAFileX
 import java.io.File
 
 fun FileX.getChild(fileName: String, cached: Boolean = false): FileX =
-    FileX(this.context, this, fileName, cached)
+    FileX(this.context, this, fileName, cached = cached)
 
 @RequiresApi(21)
 fun FileX.getNeighbor(fileName: String, cached: Boolean = false): FileX =
-    FileX(this.context, this.uri.getNeighborUri(fileName), cached)
+    FileX(this.context, this.uri.getNeighborUri(fileName), cached = cached)
 
 @SuppressLint("NewApi")
 fun FileX.deleteRecursively(): Boolean =

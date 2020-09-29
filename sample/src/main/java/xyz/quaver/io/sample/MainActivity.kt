@@ -52,13 +52,10 @@ class MainActivity : AppCompatActivity() {
 
                     val file = FileX(this, uri)
 
-                    val child = file.getChild(".download")
+                    val child = file.getChild("""><""")
+                    child.mkdir()
 
-                    Log.i("DOCX", child.toString())
-                    Log.i("DOCX", child.createNewFile().toString())
-                    Log.i("DOCX", child.writeText("test").toString())
-                    Log.i("DOCX", child.readText().toString())
-                    Log.i("DOCX", child.toString())
+                    Log.i("DOCX", child.name)
                 }
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
