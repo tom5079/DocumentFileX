@@ -3,7 +3,7 @@ java.io.File compatible SAF implementation
 
 Tired of SAF bullshits? Implement SAF with ease!
 
-**This library is in early alpha stage. Note that the library might not work as intended.**
+**This library is in alpha stage. Most features are working, but some features might not work as intended.**
 
 ### Features
  - Interoperable with java.io.File with some exceptions
