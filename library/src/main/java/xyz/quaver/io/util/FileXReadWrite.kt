@@ -30,13 +30,13 @@ import xyz.quaver.io.SAFileX
 import java.io.*
 import java.nio.charset.Charset
 
-fun FileX.inputStream(): InputStream? = when (this) {
+fun FileX.inputStream(): FileInputStream? = when (this) {
     is SAFileX -> this.inputStream()
     is RawFileX -> File(this.path).inputStream()
     else -> throw UnsupportedOperationException()
 }
 
-fun FileX.outputStream(mode: String = "w"): OutputStream? = when (this) {
+fun FileX.outputStream(mode: String = "w"): FileOutputStream? = when (this) {
     is SAFileX -> this.outputStream(mode)
     is RawFileX -> File(this.path).outputStream()
     else -> throw UnsupportedOperationException()
