@@ -52,10 +52,9 @@ class MainActivity : AppCompatActivity() {
 
                     val file = FileX(this, uri)
 
-                    val child = file.getChild("""><""")
-                    child.mkdir()
+                    val child = file.getChild("test.txt")
 
-                    Log.i("DOCX", child.name)
+                    Log.i("DOCX", child.readText().toString())
                 }
             }
             else -> super.onActivityResult(requestCode, resultCode, data)

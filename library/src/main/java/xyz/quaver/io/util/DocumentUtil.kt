@@ -35,6 +35,7 @@ import android.os.storage.StorageVolume
 import android.provider.DocumentsContract
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.database.getStringOrNull
 import java.io.File
 import java.lang.reflect.Array
 
@@ -159,17 +160,29 @@ val Uri?.niceDocumentId: String?
  * @see Uri.isExternalStorageDocument
  */
 @RequiresApi(21)
-fun Uri.getChildUri(child: String): Uri {
+fun Uri.getChildUri(context: Context, child: String): Uri? {
     if (!this.isTreeUri)
-        throw UnsupportedOperationException("Only Tree Uri is allowed")
+        return null
 
-    val childDocumentId =
-        if (this.isRoot)
-            "${this.volumeId}:${child}"
-        else
-            "${this.niceDocumentId}/$child"
+    return if (this.isExternalStorageDocument) {
+        val childDocumentId =
+            if (this.isRoot)
+                "${this.volumeId}:${child}"
+            else
+                "${this.niceDocumentId}/$child"
 
-    return DocumentsContract.buildDocumentUriUsingTree(this, childDocumentId)
+        DocumentsContract.buildDocumentUriUsingTree(this, childDocumentId)
+    } else {
+        val childUri = DocumentsContract.buildChildDocumentsUriUsingTree(this, niceDocumentId)
+
+        context.contentResolver.query(childUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null).use {
+            while (it?.moveToNext() == true) {
+                if (it.getStringOrNull(it.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)) == child)
+                    return DocumentsContract.buildDocumentUriUsingTree(this, it.getString(it.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)))
+            }
+        }
+        return null
+    }
 }
 /**
  * Returns a Uri that points a file with a given filename in the same directory
@@ -180,8 +193,8 @@ fun Uri.getChildUri(child: String): Uri {
  */
 @RequiresApi(21)
 fun Uri.getNeighborUri(filename: String): Uri {
-    if (!this.isTreeUri)
-        throw UnsupportedOperationException("Only Tree Uri is allowed")
+    if (!this.isExternalStorageDocument)
+        throw UnsupportedOperationException("Only External Storage Document Uri is allowed")
 
     val neighborDocumentId = this.documentIdPathSegments!!.let {
         if (it.isEmpty())
@@ -195,21 +208,23 @@ fun Uri.getNeighborUri(filename: String): Uri {
     return DocumentsContract.buildDocumentUriUsingTree(this, createNewDocumentId(volumeId!!, neighborDocumentId))
 }
 
-val Uri.name: String?
-    get() = this.documentIdPathSegments?.let {
-        if (it.isNotEmpty())
-            it.last()
-        else
+@RequiresApi(Build.VERSION_CODES.KITKAT)
+fun Uri.getName(context: Context): String? {
+    return when {
+        this.isExternalStorageDocument -> {
+            this.documentIdPathSegments?.let {
+                if (it.isNotEmpty())
+                    it.last()
+                else
+                    null
+            }
+        }
+        this.isTreeUri ->
+            query<String>(context, DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+        else ->
             null
     }
-
-val Uri.displayName: String?
-    get() = this.documentIdPathSegments?.last()?.split('.')?.let {
-        if (it.size >= 2)
-            it.dropLast(1).joinToString(".")
-        else
-            null
-    }
+}
 
 val Uri.extension: String?
     get() = this.documentIdPathSegments?.last()?.split('.')?.let {

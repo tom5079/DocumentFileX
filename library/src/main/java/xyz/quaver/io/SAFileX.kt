@@ -64,7 +64,7 @@ abstract class SAFileX : FileX {
     override fun getCanonicalFile(): File? = uri.toFile(context)
     override fun getCanonicalPath(): String? = canonicalFile?.canonicalPath
 
-    override fun getName(): String? = uri.name
+    override fun getName(): String? = uri.getName(context)
     override fun getPath(): String? = uri.path
 
     override fun getFreeSpace(): Long = kotlin.runCatching {

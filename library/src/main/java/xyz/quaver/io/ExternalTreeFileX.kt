@@ -33,45 +33,20 @@ import java.io.FileFilter
 import java.io.FilenameFilter
 
 @RequiresApi(21)
-class TreeFileX : SAFileX {
-
-    private var _parent: TreeFileX? = null
-    private var _name: String? = null
-
+class ExternalTreeFileX : SAFileX {
     private constructor() : super("") {
         throw UnsupportedOperationException("STOP! You violated the law.")
     }
 
-    constructor(context: Context, parent: Uri, child: String, cached: Boolean) :
-            this(context, TreeFileX(context, parent, cached), child, cached)
-
-    constructor(context: Context, parent: TreeFileX, child: String, cached: Boolean) : super("") {
-        this.context = context
-
-        child.split('/').let {
-            if (it.size < 2) {
-                this._parent = parent
-                this._name = child
-            } else {
-                this._parent = TreeFileX(context, parent, it.dropLast(1).joinToString("/"), cached)
-                this._name = it.last()
-            }
-        }
-
-        parent.uri.getChildUri(context, child)?.let {
-            this.uri = it
-        }
-
-        this.cached = cached
-        this.cache = Cache(context, uri)
-        if (cached)
-            invalidate()
-    }
+    constructor(context: Context, parent: Uri, child: String, cached: Boolean)
+        : this(context, parent.getChildUri(context, child)!!, cached)
 
     constructor(context: Context, uri: Uri, cached: Boolean) : super(uri.path.let {
         it ?: throw NullPointerException("URI path should not be null")
     }) {
         this.context = context
+        this.uri = uri
+
         this.uri = DocumentsContract.buildDocumentUriUsingTree(uri, when {
             uri.isDocumentUri -> uri.documentId
             else -> uri.treeDocumentId
@@ -84,29 +59,24 @@ class TreeFileX : SAFileX {
     }
 
     override fun createNewFile(): Boolean {
-        if (uri != Uri.EMPTY)
+        if (uri.exists(context))
             return false
 
-        val extension = _name!!.takeLastWhile { it != '.' }
+        val extension = uri.extension
         val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-        val name = _name!!
+        val name = when(mimeType) {
+            null ->
+                uri.getName(context)
+            else ->
+                uri.getName(context)?.takeWhile { it != '.' }
+        } ?: throw Exception("Unable to get name from Uri")
 
         if (parentFile.exists())
-            return _parent!!.uri.create(context, mimeType ?: "application/octet-stream", name)?.let {
+            return uri.parent.create(context, mimeType ?: "application/octet-stream", name)?.let {
                 this.uri = it
-            }?.also { cache = Cache(context, uri); if (cached) cache.invalidate() } != null
+            } != null
 
         return false
-    }
-
-    override fun getName(): String? {
-        if (_name != null)
-            return _name
-
-        return when {
-            cached -> cache.name
-            else -> uri.getName(context)
-        }
     }
 
     override fun delete(): Boolean =
@@ -118,17 +88,11 @@ class TreeFileX : SAFileX {
         } else
             uri.delete(context)
 
-    override fun getParent(): String =
-        if (_parent != null)
-            _parent!!.uri.toString()
-        else
-            throw UnsupportedOperationException("getParent() only works with TreeFileX created with child parameter")
+    override fun getParent() =
+        uri.parent.toString()
 
     override fun getParentFile() =
-        if (_parent != null)
-            _parent!!
-        else
-            throw UnsupportedOperationException("getParentFile() only works with TreeFileX created with child parameter")
+        FileX(context, uri.parent, cached = cached)
 
     override fun list() =
         uri.list(context).map { it.toString() }.toTypedArray()
@@ -142,7 +106,7 @@ class TreeFileX : SAFileX {
     }
 
     override fun listFiles() =
-        uri.list(context).map { TreeFileX(context, it, false).also { _parent = this } }.toTypedArray()
+        uri.list(context).map { FileX(context, it) }.toTypedArray()
 
     override fun listFiles(filter: FileFilter): Array<File> {
         return listFiles().filter {
@@ -157,21 +121,24 @@ class TreeFileX : SAFileX {
     }
 
     override fun mkdir(): Boolean {
-        if (uri != Uri.EMPTY || _parent == null)
+        if (uri.exists(context))
             return false
 
         val name = this.name ?: return false
 
-        return _parent!!.uri.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.let {
-            this.uri = it
-        } != null
+        if (parentFile.exists())
+            return uri.parent.create(context, DocumentsContract.Document.MIME_TYPE_DIR, name)?.let {
+                this.uri = it
+            } != null
+
+        return false
     }
 
     override fun mkdirs(): Boolean {
-        if (_parent == null)
+        if (uri.isRoot)
             return false
 
-        if (uri != Uri.EMPTY)
+        if (uri.exists(context))
             return false
 
         return this.parentFile.let {

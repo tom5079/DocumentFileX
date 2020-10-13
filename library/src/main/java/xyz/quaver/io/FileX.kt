@@ -80,7 +80,7 @@ abstract class FileX : File {
     internal constructor(path: String) : super(path)
 
     internal lateinit var context: Context
-    lateinit var uri: Uri
+    var uri: Uri = Uri.EMPTY
 
     var cached = false
     lateinit var cache: Cache
@@ -107,6 +107,11 @@ fun FileX(context: Context, parent: File, child: String? = null, cached: Boolean
 fun FileX(context: Context, parent: Uri, child: String? = null, cached: Boolean = false): FileX {
     return when {
         parent.isTreeUri && parent.isExternalStorageDocument && Build.VERSION.SDK_INT >= 21  ->
+            if (child == null)
+                ExternalTreeFileX(context, parent, cached)
+            else
+                ExternalTreeFileX(context, parent, child, cached)
+        parent.isTreeUri && Build.VERSION.SDK_INT >= 21 ->
             if (child == null)
                 TreeFileX(context, parent, cached)
             else
