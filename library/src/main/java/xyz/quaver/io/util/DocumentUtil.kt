@@ -468,30 +468,41 @@ fun getFullPathFromTreeUri(context: Context, uri: Uri) : String? {
 }
 
 fun Uri.toFile(context: Context): File? {
-    val externalStorageRoot = context.getExternalStoragePaths()
+    return when {
+        this.isExternalStorageDocument -> {
+            val externalStorageRoot = context.getExternalStoragePaths()
 
-    val path = this.documentIdPath ?: return null
+            val path = this.documentIdPath ?: return null
 
-    /* First test is to compare root names with known roots of removable media
-     * In many cases, the SD card root name is shared between pre-SAF (File) and SAF (DocumentFile) frameworks
-     * (e.g. /storage/3437-3934 vs. /tree/3437-3934)
-     * This is what the following block is trying to do
-     */
-    externalStorageRoot.forEach {
-        if (it.substringAfterLast(File.separatorChar).equals(this.volumeId, true))
-            return File(it, path)
+            /* First test is to compare root names with known roots of removable media
+         * In many cases, the SD card root name is shared between pre-SAF (File) and SAF (DocumentFile) frameworks
+         * (e.g. /storage/3437-3934 vs. /tree/3437-3934)
+         * This is what the following block is trying to do
+         */
+            externalStorageRoot.forEach {
+                if (it.substringAfterLast(File.separatorChar).equals(this.volumeId, true))
+                    return File(it, path)
+            }
+
+            /* In some other cases, there is no common name (e.g. /storage/sdcard1 vs. /tree/3437-3934)
+         * We can use a slower method to translate the Uri obtained with SAF into a pre-SAF path
+         * and compare it to the known removable media volume names
+         */
+            val root = getFullPathFromTreeUri(context, this)
+
+            externalStorageRoot.forEach {
+                if (root?.startsWith(it) == true)
+                    return File(root)
+            }
+
+            File(
+                ContextCompat.getExternalFilesDirs(context, null)
+                    .first().canonicalPath.substringBeforeLast("/Android/data"), path
+            )
+        }
+        this.isDownloadsDocument ->
+            File(this.documentIdSegment?.last() ?: return null)
+        else ->
+            null
     }
-
-    /* In some other cases, there is no common name (e.g. /storage/sdcard1 vs. /tree/3437-3934)
-     * We can use a slower method to translate the Uri obtained with SAF into a pre-SAF path
-     * and compare it to the known removable media volume names
-     */
-    val root = getFullPathFromTreeUri(context, this)
-
-    externalStorageRoot.forEach {
-        if (root?.startsWith(it) == true)
-            return File(root)
-    }
-
-    return File(ContextCompat.getExternalFilesDirs(context, null).first().canonicalPath.substringBeforeLast("/Android/data"), path)
 }
