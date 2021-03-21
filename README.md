@@ -19,10 +19,7 @@ Tired of SAF bullshits? Implement SAF with ease!
 ## Setup
 ```gradle
 dependencies {
-    implementation 'xyz.quaver:documentfilex:0.3'
-    
-    // EXPERIMENTAL: Added support for non external storage document Uris
-    implementation 'xyz.quaver:documentfilex:0.4-alpha02'
+    implementation 'xyz.quaver:documentfilex:0.5'
 }
 ```
 
@@ -46,9 +43,8 @@ val text = file.readText(data, Charset.forName(<small quiz for you>))
 ```
 
 ### Directory I/O
-Directory I/O is only supported by `tree://com.android.externalstorage.documents/...` URI
+Directory I/O is supported by `tree://...` URI
 
-EXPERIMENTAL: `0.4-alpha02` supports all `tree://..` URI
 ```kotlin
 val folder = FileX(context, uri, "akita") // No overhead
 val child = folder.getChild("daisen") // No overhead
