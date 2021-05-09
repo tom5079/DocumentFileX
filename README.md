@@ -26,7 +26,7 @@ dependencies {
 ## Sample Code
 
 ### File I/O
-**You have to use File I/O methods declared in `xyz.quaver.io.util.*`  
+> :warning: **You have to use File I/O methods declared in `xyz.quaver.io.util.*`  
 Default kotlin extension methods do not work with SAFileX Instances.**
 ```kotlin
 val file = FileX(context, uri)
