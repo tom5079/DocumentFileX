@@ -1,17 +1,17 @@
 plugins {
     id("com.android.library")
     id("kotlin-android")
-    id("org.jetbrains.dokka")
+    id("org.jetbrains.dokka") version "1.4.32"
     `maven-publish`
     signing
 }
 
 group = "xyz.quaver"
-version = "0.5"
+version = "0.7"
 
 android {
     compileSdkVersion(30)
-    buildToolsVersion = "29.0.3"
+    buildToolsVersion = "30.0.3"
 
     defaultConfig {
         minSdkVersion(14)
@@ -31,18 +31,13 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-    }
-    
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        moduleName = "xyz.quaver.io.documentfilex"
     }
 }
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("androidx.core:core-ktx:1.3.2")
+    implementation("androidx.core:core-ktx:1.5.0")
     testImplementation("junit:junit:4.13.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
@@ -82,11 +77,13 @@ afterEvaluate {
                     developers {
                         developer {
                             id.set("tom5079")
+                            name.set("Minseok Son")
                             email.set("tom5079@naver.com")
                         }
                     }
                     scm {
                         connection.set("scm:git:git://github.com/tom5079/DocumentFileX.git")
+                        developerConnection.set("scm:git:ssh://github.com:tom5079/DocumentFileX.git")
                         url.set("https://github.com/tom5079/DocumentFileX")
                     }
                 }
@@ -95,8 +92,8 @@ afterEvaluate {
 
         repositories {
             maven {
-                val releasesRepoUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2")
-                val snapshotRepoUrl = uri("https://oss.sonatype.org/content/repositories/snapshots")
+                val releasesRepoUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                val snapshotRepoUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
 
                 url = if (version.toString().endsWith("SNAPSHOT")) snapshotRepoUrl else releasesRepoUrl
 
@@ -106,5 +103,9 @@ afterEvaluate {
                 }
             }
         }
+    }
+    
+    signing {
+        sign(publishing.publications)
     }
 }
