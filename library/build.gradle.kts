@@ -44,8 +44,8 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.3.0")
 }
 
-val ossrhUsername: String by project
-val ossrhPassword: String by project
+val ossrhUsername: String? by project
+val ossrhPassword: String? by project
 
 val sourceJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
