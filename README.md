@@ -19,14 +19,14 @@ Tired of SAF bullshits? Implement SAF with ease!
 ## Setup
 ```gradle
 dependencies {
-    implementation 'xyz.quaver:documentfilex:0.3'
+    implementation 'xyz.quaver:documentfilex:0.6.1'
 }
 ```
 
 ## Sample Code
 
 ### File I/O
-**You have to use File I/O methods declared in `xyz.quaver.io.util.*`  
+> :warning: **You have to use File I/O methods declared in `xyz.quaver.io.util.*`  
 Default kotlin extension methods do not work with SAFileX Instances.**
 ```kotlin
 val file = FileX(context, uri)
@@ -43,7 +43,8 @@ val text = file.readText(data, Charset.forName(<small quiz for you>))
 ```
 
 ### Directory I/O
-Directory I/O is only supported by `tree://...` URI
+Directory I/O is supported by `tree://...` URI
+
 ```kotlin
 val folder = FileX(context, uri, "akita") // No overhead
 val child = folder.getChild("daisen") // No overhead
