@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:4.2.1")
+        classpath("com.android.tools.build:gradle:7.0.1")
         classpath(kotlin("gradle-plugin", version = "1.5.0-RC"))
 
         // NOTE: Do not place your application dependencies here; they belong
