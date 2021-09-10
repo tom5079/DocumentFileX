@@ -51,7 +51,7 @@ abstract class SAFileX : FileX {
     }
 
     override fun deleteOnExit(): Unit =
-        DeleteOnExitHook.add(uri)
+        DeleteOnExitHook.add(this)
 
     override fun exists(): Boolean = when {
         cached -> cache.exists
