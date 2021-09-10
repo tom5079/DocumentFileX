@@ -33,7 +33,7 @@ import java.nio.charset.Charset
 fun SAFileX.inputStream(): FileInputStream? =
     context.contentResolver.openInputStream(this.uri) as FileInputStream
 
-fun SAFileX.outputStream(mode: String = "w"): FileOutputStream? =
+fun SAFileX.outputStream(mode: String = "wt"): FileOutputStream? =
     context.contentResolver.openOutputStream(this.uri, mode) as FileOutputStream
 
 fun SAFileX.reader(charset: Charset = Charsets.UTF_8): InputStreamReader? =
@@ -90,7 +90,6 @@ fun SAFileX.readBytes(): ByteArray? = inputStream()?.use { input ->
 
 fun SAFileX.writeBytes(array: ByteArray) {
     outputStream()?.use {
-        it.channel.truncate(0)
         it.write(array)
     }
 }
