@@ -26,17 +26,16 @@ import android.annotation.TargetApi
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.RequiresApi
+import xyz.quaver.io.FileX
 
 @TargetApi(19)
-class DeleteOnExitHook {
+internal class DeleteOnExitHook {
 
     companion object {
-        lateinit var context: Context
-
-        private val files = hashSetOf<Uri>()
+        private val files = hashSetOf<FileX>()
 
         private fun runHooks() {
-            val theFiles = hashSetOf<Uri>()
+            val theFiles = hashSetOf<FileX>()
 
             synchronized(DeleteOnExitHook::class) {
                 theFiles.addAll(files)
@@ -45,15 +44,15 @@ class DeleteOnExitHook {
 
             theFiles.reversed().forEach {
                 kotlin.runCatching {
-                    it.delete(context)
+                    it.delete()
                 }
             }
         }
 
         @Synchronized
         @RequiresApi(19)
-        fun add(uri: Uri) {
-            files.add(uri)
+        fun add(file: FileX) {
+            files.add(file)
         }
 
         init {
