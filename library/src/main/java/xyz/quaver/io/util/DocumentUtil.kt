@@ -31,7 +31,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.storage.StorageManager
-import android.os.storage.StorageVolume
 import android.provider.DocumentsContract
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -439,54 +438,73 @@ fun Uri.list(context: Context): List<Uri> {
 // Huge thanks to avluis(https://github.com/avluis)
 // These codes are originated from Hentoid(https://github.com/avluis/Hentoid) under Apache-2.0 license.
 private const val PRIMARY_VOLUME_NAME = "primary"
-fun getVolumePath(context: Context, volumeID: String?) = runCatching {
+
+/**
+ * Get the human-readable access path for the given volume ID
+ *
+ * @param context  Context to use
+ * @param volumeId Volume ID to get the path from
+ * @return Human-readable access path of the given volume ID
+ */
+private fun getVolumePath(context: Context, volumeID: String): String? = runCatching {
+
     val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 
     if (Build.VERSION.SDK_INT >= 24) {
-        val getPath: (StorageVolume) -> String = { sv ->
-            StorageVolume::class.java.getMethod("getPath").invoke(sv) as String
-        }
-
         storageManager.storageVolumes.forEach {
-            if (it.isPrimary && volumeID == PRIMARY_VOLUME_NAME)
-                return@runCatching getPath(it)
-
-            if (volumeID == it.uuid)
-                return@runCatching getPath(it)
+            if (volumeIdMatch(it.uuid, it.isPrimary, volumeID)) return@runCatching getVolumePath(it)
         }
-
-        return@runCatching null
-    } else if (Build.VERSION.SDK_INT >= 19) {
-        val getVolumeList = StorageManager::class.java.getMethod("getVolumeList")
-
+    } else if (Build.VERSION.SDK_INT >= 21) {
+        // StorageVolume exists since API19, has an uuid since API21 but is only visible since API24
+        val getVolumeList = storageManager.javaClass.getMethod("getVolumeList")
         val sv = Class.forName("android.os.storage.StorageVolume")
-
         val isPrimary = sv.getMethod("isPrimary")
-        val getPath = sv.getMethod("getPath")
         val getUUID = sv.getMethod("getUUID")
-
         val volumeArray = getVolumeList.invoke(storageManager) ?: return@runCatching null
-
         for (i in 0 until Array.getLength(volumeArray)) {
             val volume = Array.get(volumeArray, i)
-
-            val primary = isPrimary.invoke(volume) as Boolean
-            val path = getPath.invoke(volume) as String
-
-            if (primary && volumeID == PRIMARY_VOLUME_NAME)
-                return@runCatching path
-
-            val uuid = getUUID.invoke(volume)
-
-            if (volumeID == uuid)
-                return@runCatching path
+            if (volume != null) {
+                val uuid: String = getUUID.invoke(volume) as String
+                val primary = isPrimary.invoke(volume) as Boolean
+                if (volumeIdMatch(uuid, primary, volumeID)) return@runCatching getVolumePath(volume)
+            }
         }
-
-        return@runCatching null
-    } else {
-        return@runCatching null
     }
+    return@runCatching null
 }.getOrNull()
+
+/**
+ * Returns the human-readable access path of the root of the given storage volume
+ *
+ * @param storageVolume android.os.storage.StorageVolume to return the path from
+ * @return Human-readable access path of the root of the given storage volume; empty string if not found
+ */
+// Access to getPathFile is limited to API<30
+private fun getVolumePath(storageVolume: Any): String? = runCatching {
+    val storageVolumeClazz = Class.forName("android.os.storage.StorageVolume")
+    val pathFile = if (Build.VERSION.SDK_INT < 30) {
+        val getPathFile = storageVolumeClazz.getMethod("getPathFile") // Removed in API30
+        getPathFile.invoke(storageVolume) as File
+    } else {
+        val getDirectory = storageVolumeClazz.getMethod("getDirectory")
+        getDirectory.invoke(storageVolume) as File
+    }
+    val path = pathFile.path
+    val absolutePath = pathFile.absolutePath
+
+    if (path.isEmpty() && absolutePath.isEmpty()) return@runCatching pathFile.canonicalPath
+    return@runCatching if (path.isEmpty()) absolutePath else path
+}.getOrNull()
+
+private fun volumeIdMatch(
+    volumeUuid: String?,
+    isVolumePrimary: Boolean,
+    treeVolumeId: String
+): Boolean {
+    return if (volumeUuid == treeVolumeId.replace("/", "")) true
+    else isVolumePrimary && treeVolumeId == PRIMARY_VOLUME_NAME
+}
+
 
 fun getFullPathFromTreeUri(context: Context, uri: Uri): String? {
     val volumePath = getVolumePath(context, uri.volumeId ?: return null).let {
