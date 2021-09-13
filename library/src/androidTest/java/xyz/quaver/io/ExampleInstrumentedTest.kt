@@ -17,7 +17,7 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("xyz.quaver.documentfilex.test", appContext.packageName)
+        assertEquals("xyz.quaver.io.test", appContext.packageName)
     }
 
     @Test
