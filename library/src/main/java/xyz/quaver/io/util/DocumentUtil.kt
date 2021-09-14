@@ -182,9 +182,7 @@ fun Uri.getChildUri(context: Context, child: String): Uri? {
                 DocumentsContract.Document.COLUMN_DOCUMENT_ID,
                 DocumentsContract.Document.COLUMN_DISPLAY_NAME
             ),
-            null,
-            null,
-            null
+            null, null, null
         ).use {
             while (it?.moveToNext() == true) {
                 if (it.getStringOrNull(it.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)) == child)
@@ -298,9 +296,7 @@ fun Uri.exists(context: Context): Boolean {
         context.contentResolver.query(
             this,
             arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
-            null,
-            null,
-            null
+            null, null, null
         )?.use {
             it.count > 0
         }
@@ -335,9 +331,7 @@ fun Uri.canRead(context: Context): Boolean {
         context.contentResolver.query(
             this,
             arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE),
-            null,
-            null,
-            null
+            null, null, null
         )?.use {
             if (it.moveToFirst())
                 it.getString(0)
@@ -381,9 +375,7 @@ fun Uri.canWrite(context: Context): Boolean {
                 DocumentsContract.Document.COLUMN_MIME_TYPE,
                 DocumentsContract.Document.COLUMN_FLAGS
             ),
-            null,
-            null,
-            null
+            null, null, null
         )?.use {
             if (it.moveToFirst())
                 Pair(it.getString(0), it.getInt(1))
@@ -423,9 +415,7 @@ fun Uri.list(context: Context): List<Uri> {
         context.contentResolver.query(
             children,
             arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
-            null,
-            null,
-            null
+            null, null, null
         )?.use {
             while (it.moveToNext())
                 result.add(it.getString(0))
