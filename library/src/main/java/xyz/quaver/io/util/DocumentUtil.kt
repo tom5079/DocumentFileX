@@ -24,6 +24,7 @@
 
 package xyz.quaver.io.util
 
+import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -49,13 +50,13 @@ val Uri?.isExternalStorageDocument: Boolean
     get() = this?.authority == "com.android.externalstorage.documents"
 
 val Uri?.isDownloadsDocument: Boolean
-    get() =  this?.authority == "com.android.providers.downloads.documents"
+    get() = this?.authority == "com.android.providers.downloads.documents"
 
 val Uri?.isMediaDocument: Boolean
     get() = this?.authority == "com.android.providers.media.documents"
 
 val Uri?.isContentUri: Boolean
-    get()  = this?.scheme == ContentResolver.SCHEME_CONTENT
+    get() = this?.scheme == ContentResolver.SCHEME_CONTENT
 val Uri?.isFileUri: Boolean
     get() = this?.scheme == ContentResolver.SCHEME_FILE
 
@@ -175,15 +176,26 @@ fun Uri.getChildUri(context: Context, child: String): Uri? {
     } else {
         val childUri = DocumentsContract.buildChildDocumentsUriUsingTree(this, niceDocumentId)
 
-        context.contentResolver.query(childUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null).use {
+        context.contentResolver.query(
+            childUri,
+            arrayOf(
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME
+            ),
+            null, null, null
+        ).use {
             while (it?.moveToNext() == true) {
                 if (it.getStringOrNull(it.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)) == child)
-                    return DocumentsContract.buildDocumentUriUsingTree(this, it.getString(it.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)))
+                    return DocumentsContract.buildDocumentUriUsingTree(
+                        this,
+                        it.getString(it.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID))
+                    )
             }
         }
         return null
     }
 }
+
 /**
  * Returns a Uri that points a file with a given filename in the same directory
  *
@@ -205,7 +217,10 @@ fun Uri.getNeighborUri(filename: String): Uri {
             }
     }.joinToString("/")
 
-    return DocumentsContract.buildDocumentUriUsingTree(this, createNewDocumentId(volumeId!!, neighborDocumentId))
+    return DocumentsContract.buildDocumentUriUsingTree(
+        this,
+        createNewDocumentId(volumeId!!, neighborDocumentId)
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -234,7 +249,7 @@ val Uri.extension: String?
             null
     }
 
-inline fun <reified T> Uri.query(context: Context, columnName: String) : T? {
+inline fun <reified T> Uri.query(context: Context, columnName: String): T? {
     return kotlin.runCatching {
         context.contentResolver.query(this, arrayOf(columnName), null, null, null)?.use {
             if (it.moveToFirst()) {
@@ -260,9 +275,10 @@ val Uri.parent: Uri
             throw UnsupportedOperationException("Only Tree Uri is allowed")
 
         val parentDocumentId =
-            createNewDocumentId(this.volumeId!!, this.documentIdPathSegments!!
-                .dropLast(1)
-                .joinToString("/")
+            createNewDocumentId(
+                this.volumeId!!, this.documentIdPathSegments!!
+                    .dropLast(1)
+                    .joinToString("/")
             )
 
         return DocumentsContract.buildDocumentUriUsingTree(this, parentDocumentId)
@@ -277,7 +293,11 @@ fun Uri.readText(context: Context) =
 @RequiresApi(19)
 fun Uri.exists(context: Context): Boolean {
     return kotlin.runCatching {
-        context.contentResolver.query(this, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID), null, null, null)?.use {
+        context.contentResolver.query(
+            this,
+            arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
+            null, null, null
+        )?.use {
             it.count > 0
         }
     }.getOrNull() ?: false
@@ -295,10 +315,12 @@ internal fun Int.checkFlag(flag: Int) =
     this.and(flag) != 0
 
 internal fun Uri.hasPermission(context: Context) =
-    context.checkCallingOrSelfUriPermission(this, Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == PackageManager.PERMISSION_GRANTED
+    context.checkCallingOrSelfUriPermission(
+        this,
+        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+    ) == PackageManager.PERMISSION_GRANTED
 
-internal fun canRead(type: String?)
-    = type?.isNotEmpty() ?: false
+internal fun canRead(type: String?) = type?.isNotEmpty() ?: false
 
 @RequiresApi(19)
 fun Uri.canRead(context: Context): Boolean {
@@ -306,7 +328,11 @@ fun Uri.canRead(context: Context): Boolean {
         return false
 
     val type = kotlin.runCatching {
-        context.contentResolver.query(this, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use {
+        context.contentResolver.query(
+            this,
+            arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE),
+            null, null, null
+        )?.use {
             if (it.moveToFirst())
                 it.getString(0)
             else
@@ -328,7 +354,8 @@ internal fun canWrite(type: String?, flags: Int?): Boolean {
         return true
 
     if (type == DocumentsContract.Document.MIME_TYPE_DIR
-        && flags.checkFlag(DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE))
+        && flags.checkFlag(DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE)
+    )
         return true
     if (flags.checkFlag(DocumentsContract.Document.FLAG_SUPPORTS_WRITE))
         return true
@@ -342,7 +369,14 @@ fun Uri.canWrite(context: Context): Boolean {
         return false
 
     val (type, flags) = kotlin.runCatching {
-        context.contentResolver.query(this, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.COLUMN_FLAGS), null, null, null)?.use {
+        context.contentResolver.query(
+            this,
+            arrayOf(
+                DocumentsContract.Document.COLUMN_MIME_TYPE,
+                DocumentsContract.Document.COLUMN_FLAGS
+            ),
+            null, null, null
+        )?.use {
             if (it.moveToFirst())
                 Pair(it.getString(0), it.getInt(1))
             else
@@ -378,13 +412,17 @@ fun Uri.list(context: Context): List<Uri> {
     val result = mutableListOf<String>()
 
     kotlin.runCatching {
-        context.contentResolver.query(children, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID), null, null, null)?.use {
+        context.contentResolver.query(
+            children,
+            arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
+            null, null, null
+        )?.use {
             while (it.moveToNext())
                 result.add(it.getString(0))
         }
     }
 
-    return result.map {  childDocumentId ->
+    return result.map { childDocumentId ->
         DocumentsContract.buildDocumentUriUsingTree(this, childDocumentId)
     }
 }
@@ -392,56 +430,66 @@ fun Uri.list(context: Context): List<Uri> {
 // Huge thanks to avluis(https://github.com/avluis)
 // These codes are originated from Hentoid(https://github.com/avluis/Hentoid) under Apache-2.0 license.
 private const val PRIMARY_VOLUME_NAME = "primary"
-fun getVolumePath(context: Context, volumeID: String?) = runCatching {
-    val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 
-    if (Build.VERSION.SDK_INT >= 24) {
-        val getPath: (StorageVolume) -> String = { sv ->
-            StorageVolume::class.java.getMethod("getPath").invoke(sv) as String
-        }
+// Compat functions
+private val Context.storageManager: StorageManager
+    get() = this.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 
-        storageManager.storageVolumes.forEach {
-            if (it.isPrimary && volumeID == PRIMARY_VOLUME_NAME)
-                return@runCatching getPath(it)
-
-            if (volumeID == it.uuid)
-                return@runCatching getPath(it)
-        }
-
-        return@runCatching null
-    } else if (Build.VERSION.SDK_INT >= 19) {
-        val getVolumeList = StorageManager::class.java.getMethod("getVolumeList")
-
-        val sv = Class.forName("android.os.storage.StorageVolume")
-
-        val isPrimary = sv.getMethod("isPrimary")
-        val getPath = sv.getMethod("getPath")
-        val getUUID = sv.getMethod("getUUID")
-
-        val volumeArray = getVolumeList.invoke(storageManager) ?: return@runCatching null
-
-        for (i in 0 until Array.getLength(volumeArray)) {
-            val volume = Array.get(volumeArray, i)
-
-            val primary = isPrimary.invoke(volume) as Boolean
-            val path = getPath.invoke(volume) as String
-
-            if (primary && volumeID == PRIMARY_VOLUME_NAME)
-                return@runCatching path
-
-            val uuid = getUUID.invoke(volume)
-
-            if (volumeID == uuid)
-                return@runCatching path
-        }
-
-        return@runCatching null
-    } else {
-        return@runCatching null
+private val StorageManager.volumeListCompat: List<StorageVolume>
+    @SuppressLint("NewApi")
+    get() = when (Build.VERSION.SDK_INT) {
+        in 0 until 21 -> emptyList()
+        in 24 .. Int.MAX_VALUE -> this.storageVolumes
+        else -> kotlin.runCatching {
+            javaClass.getMethod("getVolumeList").invoke(this)?.let { arr ->
+                (0 until Array.getLength(arr)).map { i -> Array.get(arr, i) as StorageVolume }
+            }
+        }.getOrNull() ?: emptyList()
     }
-}.getOrNull()
 
-fun getFullPathFromTreeUri(context: Context, uri: Uri) : String? {
+private val StorageVolume.directoryCompat: File?
+    get() = if (Build.VERSION.SDK_INT < 30) javaClass.getMethod("getPathFile").invoke(this) as File?
+            else this.directory
+
+/**
+ * Get the human-readable access path for the given volume ID
+ *
+ * @param context  Context to use
+ * @param volumeID Volume ID to get the path from
+ * @return Human-readable access path of the given volume ID
+ */
+@SuppressLint("NewApi")
+private fun getVolumePath(context: Context, volumeID: String): String? {
+    val doesVolumeIdMatch = { uuid: String?, isPrimary: Boolean, treeVolumeID: String ->
+        (uuid == treeVolumeID.replace("/", "")) || (isPrimary && treeVolumeID == PRIMARY_VOLUME_NAME)
+    }
+
+    return context.storageManager.volumeListCompat.firstOrNull {
+        doesVolumeIdMatch(it.uuid, it.isPrimary, volumeID)
+    }?.let { getVolumePath(it) }
+}
+
+/**
+ * Returns the human-readable access path of the root of the given storage volume
+ *
+ * @param storageVolume android.os.storage.StorageVolume to return the path from
+ * @return Human-readable access path of the root of the given storage volume; empty string if not found
+ */
+// Access to getPathFile is limited to API<30
+private fun getVolumePath(storageVolume: StorageVolume): String? {
+    val pathFile = storageVolume.directoryCompat ?: return null
+
+    val path = pathFile.path
+    val absolutePath = pathFile.absolutePath
+
+    return when {
+        path.isEmpty() and absolutePath.isEmpty() -> pathFile.canonicalPath
+        path.isEmpty() -> absolutePath
+        else -> path
+    }
+}
+
+fun getFullPathFromTreeUri(context: Context, uri: Uri): String? {
     val volumePath = getVolumePath(context, uri.volumeId ?: return null).let {
         it ?: return File.separator
 
