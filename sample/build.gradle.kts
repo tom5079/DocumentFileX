@@ -39,16 +39,18 @@ dependencies {
 
     implementation("androidx.activity:activity-compose:1.3.1")
 
-    implementation("androidx.compose.ui:ui:1.0.2")
-    implementation("androidx.compose.ui:ui-tooling:1.0.2")
-    implementation("androidx.compose.foundation:foundation:1.0.2")
-    implementation("androidx.compose.material:material:1.0.2")
-    implementation("androidx.compose.material:material-icons-core:1.0.2")
-    implementation("androidx.compose.material:material-icons-extended:1.0.2")
-    implementation("androidx.compose.animation:animation:1.0.2")
-    implementation("androidx.compose.runtime:runtime:1.0.2")
-    implementation("androidx.compose.runtime:runtime-livedata:1.0.2")
-    implementation("com.google.accompanist:accompanist-appcompat-theme:0.16.0")
+    implementation("androidx.compose.ui:ui:1.0.3")
+    implementation("androidx.compose.ui:ui-tooling:1.0.3")
+    implementation("androidx.compose.foundation:foundation:1.0.3")
+    implementation("androidx.compose.material:material:1.0.3")
+    implementation("androidx.compose.material:material-icons-core:1.0.3")
+    implementation("androidx.compose.material:material-icons-extended:1.0.3")
+    implementation("androidx.compose.animation:animation:1.0.3")
+    implementation("androidx.compose.runtime:runtime:1.0.3")
+    implementation("androidx.compose.runtime:runtime-livedata:1.0.3")
+    implementation("com.google.accompanist:accompanist-appcompat-theme:0.19.0")
+
+    implementation("org.kodein.log:kodein-log:0.11.1")
 
     implementation(project(":library"))
     testImplementation("junit:junit:4.13.2")

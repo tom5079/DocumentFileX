@@ -11,14 +11,14 @@ class MainActivityViewModel(app: Application) : AndroidViewModel(app) {
     private val _file = MutableLiveData<FileX>()
     val file = _file as LiveData<FileX>
 
-    private val _path = MutableLiveData<String>()
-    val path = _path as LiveData<String>
+    private val _uri = MutableLiveData<Uri>()
+    val uri = _uri as LiveData<Uri>
 
     fun registerUri(uri: Uri) {
         val file = FileX(getApplication(), uri)
 
         _file.postValue(file)
 
-        _path.postValue(file.canonicalPath)
+        _uri.postValue(file.uri)
     }
 }

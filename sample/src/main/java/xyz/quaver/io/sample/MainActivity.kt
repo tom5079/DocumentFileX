@@ -2,6 +2,7 @@ package xyz.quaver.io.sample
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,7 +35,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val path: String? by viewModel.path.observeAsState()
+            val uri: Uri? by viewModel.uri.observeAsState()
 
             Scaffold(
                 topBar = {
@@ -43,14 +44,14 @@ class MainActivity : ComponentActivity() {
                 floatingActionButton = {
                     FloatingActionButton(onClick = {
                         requestFolderLauncher.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-                            putExtra("android.content.exta.SHOW_ADVANCED", true)
+                            putExtra("android.content.extra.SHOW_ADVANCED", true)
                         })
                     }) {
-                        Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
+                        Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "Open file selector")
                     }
                 }
             ) {
-                Text(path.toString())
+                Text(uri.toString())
             }
         }
     }

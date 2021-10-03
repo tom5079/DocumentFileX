@@ -2,54 +2,65 @@ package xyz.quaver.io.sample
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.util.Log
 import android.widget.Button
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.uiautomator.By
-import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiSelector
-import androidx.test.uiautomator.Until
+import androidx.test.uiautomator.*
+import org.junit.After
 
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import org.junit.Before
+import org.kodein.log.LoggerFactory
+import org.kodein.log.newLogger
+import xyz.quaver.io.FileX
+import xyz.quaver.io.util.deleteRecursively
+import xyz.quaver.io.util.getChild
 
 const val TEST_PACKAGE = "xyz.quaver.io.sample"
+const val TEST_FOLDER = ".documentfilex-test"
 const val LAUNCH_TIMEOUT = 5000L
-const val SELECTOR_PACKAGE = "com.android.documentsui"
 
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
+    private lateinit var rootUri: Uri
 
     @Before
-    fun obtainPermission() {
-        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-
+    fun initTest() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val intent = context.packageManager.getLaunchIntentForPackage(TEST_PACKAGE)?.apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
         context.startActivity(intent)
 
-        device.wait(
-            Until.hasObject(By.pkg(TEST_PACKAGE)),
-            LAUNCH_TIMEOUT
-        )
-
-        device.findObject(UiSelector().className(Button::class.java)).click()
-
-        device.wait(
-            Until.hasObject(By.pkg(SELECTOR_PACKAGE)),
-            LAUNCH_TIMEOUT
-        )
+        rootUri = when (Build.VERSION.SDK_INT) {
+            21 -> obtainPermissionSDK21()
+            else -> error("SDK not supported")
+        }
     }
 
     @Test
-    fun test() {
-        assert(true)
+    fun create_directory() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val root = FileX(context, rootUri)
+
+        root.getChild("testFolder").mkdir()
+
+        assert(FileX(context, rootUri, "testFolder").exists())
     }
 
+    @After
+    fun cleanup() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+
+        val root = FileX(context, rootUri)
+
+        root.deleteRecursively()
+    }
 }
