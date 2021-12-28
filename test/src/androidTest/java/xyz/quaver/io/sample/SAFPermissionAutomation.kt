@@ -54,9 +54,9 @@ fun obtainPermissionSDK30() {
 
     device.findObject(UiSelector().clickable(true)).clickAndWaitForNewWindow()
 
-    device.findObject(By.desc("Show roots"))?.click()
+    device.findObject(UiSelector().description("Show roots")).click()
 
-    device.findObject(By.text("SDCARD")).click()
+    device.findObject(UiSelector().text("SDCARD")).click()
 
     runCatching {
         UiScrollable(UiSelector().className("androidx.recyclerview.widget.RecyclerView")).getChildByText(

@@ -29,6 +29,8 @@ const val LAUNCH_TIMEOUT = 5000L
 
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
+    private val logger = newLogger(LoggerFactory.default)
+
     private lateinit var rootUri: Uri
     private val context: Context
         get() = ApplicationProvider.getApplicationContext()
@@ -57,26 +59,45 @@ class ExampleInstrumentedTest {
     }
 
     @Test
-    fun create_directory() {
+    fun basicCreateAndDeleteDirectory() {
         val root = FileX(context, rootUri)
 
-        val child1 = FileX(context, root, "testFolder")
-        val child2 = root.getChild("testFolder")
+        val folderNames = listOf(
+            "testFolder",
+            ".testFolder",
+            "test folder",
+            "123",
+            "ASCII",
+            " testFolder",
+            "테스트 폴더",
+            "テストフォルダー",
+            """ !#$%&'()+,-.;=@[]^_`{}~""",
+        )
 
-        assertFalse(child1.exists())
-        assertFalse(child2.exists())
+        folderNames.forEach { folderName ->
+            logger.info { "basicCreateAndDeleteDirectory $folderName" }
 
-        child1.mkdir()
+            val child1 = FileX(context, root, folderName)
+            val child2 = root.getChild(folderName)
 
-        assertTrue(child1.exists())
-        assertTrue(child2.exists())
-        assert(FileX(context, rootUri, "testFolder").exists())
+            assertFalse(child1.exists())
+            assertFalse(child2.exists())
 
-        child2.deleteRecursively()
+            child1.mkdir()
 
-        assertFalse(child1.exists())
-        assertFalse(child2.exists())
-        assertFalse(FileX(context, rootUri, "testFolder").exists())
+            assertEquals(folderName, child1.name)
+            assertEquals(folderName, child2.name)
+
+            assertTrue(child1.exists())
+            assertTrue(child2.exists())
+            assert(FileX(context, rootUri, folderName).exists())
+
+            child2.deleteRecursively()
+
+            assertFalse(child1.exists())
+            assertFalse(child2.exists())
+            assertFalse(FileX(context, rootUri, folderName).exists())
+        }
     }
 
     @After

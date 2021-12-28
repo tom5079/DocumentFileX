@@ -16,7 +16,7 @@ import androidx.compose.runtime.livedata.observeAsState
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: MainActivityViewModel by viewModels()
+    internal val viewModel: MainActivityViewModel by viewModels()
 
     private val requestFolderLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == Activity.RESULT_OK) {
