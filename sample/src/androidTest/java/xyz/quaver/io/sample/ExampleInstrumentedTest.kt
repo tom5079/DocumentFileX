@@ -30,6 +30,8 @@ const val LAUNCH_TIMEOUT = 5000L
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
     private lateinit var rootUri: Uri
+    private val context: Context
+        get() = ApplicationProvider.getApplicationContext()
 
     @Before
     fun initTest() {
@@ -39,24 +41,49 @@ class ExampleInstrumentedTest {
         }
         context.startActivity(intent)
 
-        rootUri = when (Build.VERSION.SDK_INT) {
+        val activity: MainActivity = InstrumentationRegistry.getInstrumentation().addMonitor("xyz.quaver.io.sample.MainActivity", null, false).waitForActivity() as MainActivity
+
+        when (Build.VERSION.SDK_INT) {
             21 -> obtainPermissionSDK21()
+            30 -> obtainPermissionSDK30()
             else -> error("SDK not supported")
         }
+
+        while (activity.viewModel.uri.value == null) {
+            Thread.sleep(100)
+        }
+
+        rootUri = activity.viewModel.uri.value!!
     }
 
     @Test
     fun create_directory() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
         val root = FileX(context, rootUri)
 
-        root.getChild("testFolder").mkdir()
+        val child1 = FileX(context, root, "testFolder")
+        val child2 = root.getChild("testFolder")
 
+        assertFalse(child1.exists())
+        assertFalse(child2.exists())
+
+        child1.mkdir()
+
+        assertTrue(child1.exists())
+        assertTrue(child2.exists())
         assert(FileX(context, rootUri, "testFolder").exists())
+
+        child2.deleteRecursively()
+
+        assertFalse(child1.exists())
+        assertFalse(child2.exists())
+        assertFalse(FileX(context, rootUri, "testFolder").exists())
     }
 
     @After
     fun cleanup() {
+        if (!::rootUri.isInitialized)
+            return
+
         val context = ApplicationProvider.getApplicationContext<Context>()
 
         val root = FileX(context, rootUri)

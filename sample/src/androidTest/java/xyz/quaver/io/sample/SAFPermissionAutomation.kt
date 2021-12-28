@@ -1,10 +1,9 @@
 package xyz.quaver.io.sample
 
-import android.net.Uri
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.*
 
-fun obtainPermissionSDK21() : Uri {
+fun obtainPermissionSDK21() {
     val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
     device.wait(
@@ -43,6 +42,36 @@ fun obtainPermissionSDK21() : Uri {
     }
 
     device.findObject(UiSelector().textStartsWith("SELECT")).click()
+}
 
-    return Uri.parse(device.findObject(UiSelector().textStartsWith("content://")).text)
+fun obtainPermissionSDK30() {
+    val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+
+    device.wait(
+        Until.hasObject(By.pkg(TEST_PACKAGE)),
+        LAUNCH_TIMEOUT
+    )
+
+    device.findObject(UiSelector().clickable(true)).clickAndWaitForNewWindow()
+
+    device.findObject(By.desc("Show roots"))?.click()
+
+    device.findObject(By.text("SDCARD")).click()
+
+    runCatching {
+        UiScrollable(UiSelector().className("androidx.recyclerview.widget.RecyclerView")).getChildByText(
+            UiSelector().className("android.widget.TextView"),
+            TEST_FOLDER
+        )
+    }.getOrNull()?.click() ?: run {
+        device.findObject(UiSelector().description("New folder")).click()
+
+        device.findObject(UiSelector().className("android.widget.EditText")).text = TEST_FOLDER
+
+        device.findObject(UiSelector().text("OK")).click()
+    }
+
+    device.findObject(UiSelector().text("USE THIS FOLDER")).click()
+
+    device.findObject(UiSelector().text("ALLOW")).click()
 }
