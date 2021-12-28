@@ -21,6 +21,12 @@ dependencies {
 }
 ```
 
+## Invalid Characters
+
+Android Scoped Storage Framework doesn't allow following characters and automatically converts them with underscore(\_) for some bizarre reason.  
+Filter out these characters before creating any file or folder!
+Invalid characters are: `<"> <*> <:> <<> <>> <?> <\> <|>` and `</>`
+
 ## Sample Code
 
 ### File I/O
