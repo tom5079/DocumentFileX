@@ -68,7 +68,7 @@ class ExternalTreeFileX : SAFileX {
             null ->
                 uri.getName(context)
             else ->
-                uri.getName(context)?.takeWhile { it != '.' }
+                uri.getName(context)?.substringBeforeLast('.')
         } ?: throw Exception("Unable to get name from Uri")
 
         if (parentFile.exists())
