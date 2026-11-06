@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "xyz.quaver"
-version = "0.7.1"
+version = "0.7.3"
 
 android {
     compileSdk = 30
@@ -50,6 +50,10 @@ val sourceJar by tasks.registering(Jar::class) {
     from(android.sourceSets["main"].java.srcDirs)
 }
 
+val javadocJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("javadoc")
+}
+
 afterEvaluate {
     publishing {
         publications {
@@ -60,6 +64,7 @@ afterEvaluate {
 
                 from(components["release"])
                 artifact(sourceJar)
+                artifact(javadocJar)
 
                 pom {
                     name.set("documentfilex")
@@ -90,8 +95,8 @@ afterEvaluate {
 
         repositories {
             maven {
-                val releasesRepoUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-                val snapshotRepoUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+                val releasesRepoUrl = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
+                val snapshotRepoUrl = uri("https://central.sonatype.com/repository/maven-snapshots/")
 
                 url = if (version.toString().endsWith("SNAPSHOT")) snapshotRepoUrl else releasesRepoUrl
 
